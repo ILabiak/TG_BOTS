@@ -1,6 +1,8 @@
 'use strict';
 
 const promised = require('./promised.js');
+const { Crypto } = require('./crypto.js');
+const crypto = new Crypto;
 
 const errorHandlerWrapped = promised.errorWrapper(promised.handler);
 
@@ -41,8 +43,8 @@ class Wallet {
     result.push(`Total received: ${getInfo.total_received} satoshis`);
     result.push(`Total send: ${getInfo.total_sent} satoshis`);
     result.push(`Balance: ${getInfo.balance} satoshis`);
-    console.log(`${result.join('\n')}\n`);
-    return result;
+    //console.log(`${result.join('\n')}\n`);
+    return result.join('\n');
   }
   get keys() {
     if (!this._keys) return null;

@@ -40,15 +40,15 @@ const genWalletFeature = async (crypto) => {
   return resultText.join('\n');
 };
 
-const btcAdrBalance = async () => {
+const btcAdrBalance = async adrs => {
   const wallet = new Wallet();
-  console.log('Write the address you want to get balance of\n');
-  const adrs = await promised.question('');
-
+  if (adrs === undefined && adrs.length != 34) {
+    ctx.reply('Wrong address\n');
+  }
   const res = await wallet.getAdrsBalance(adrs);
-  await safeWrite(res);
-  return;
+  return res;
 };
+
 
 
 const feesRate = async () => {

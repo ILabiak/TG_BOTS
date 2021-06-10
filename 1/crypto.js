@@ -35,6 +35,17 @@ class RawCrypto {
     return resultText.join('\n');
   }
 
+  async currencyexchanger(amount, from, to){
+
+    const link = this.defaultUrl + `/price?fsym=${from}&tsyms=${to}`;
+    const request = await safeGet(link);
+    const rate = request[Object.keys(request)[0]]
+    const result = (rate * amount).toFixed(2);
+    const resultText = `${amount} ${from.toUpperCase()} = ${result} ${to.toUpperCase()}`;
+    //console.log(resultText)
+    return [result,resultText];
+    }
+
   async topFiveCurrencies() {
     const query = this.defaultUrl + '/top/totalvolfull?limit=10&tsym=USD';
     const currencies = (await safeGet(query)).Data;
@@ -183,11 +194,11 @@ const Crypto = promised.classWrapper(RawCrypto, promised.classHandler);
 
 const temp = new Crypto;
 
-/* (async () => {
+ (async () => {
 
-  await temp.cryptoPrices('btc','eth')
+  console.dir(await temp.currencyexchanger(0.1,'btc','usd'));
 
-})(); */
+})(); 
 
 
 module.exports = {
