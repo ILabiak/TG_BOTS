@@ -15,7 +15,14 @@ bot.launch()
 bot.use(session())
 const crypto = new Crypto();
 
-bot.command('cryptoprices', async (ctx) => ctx.reply(await crypto.cryptoPrices('btc','eth','ltc')));
+bot.command('cryptoprices', async (ctx) => {
+    let currency = ctx.update.message.text.split(' ')[1];
+    if(currency === undefined || currency.toLowerCase() =='usd'){
+        ctx.reply(await crypto.cryptoPrices('btc','eth','ltc'));
+        return;
+    }
+    ctx.reply(await crypto.cryptoPrices(currency));
+});
 
 bot.command('generatebtcaddress', async (ctx) => ctx.reply(await exchanges.genWalletFeature('btc')));
 bot.command('generateethaddress', async (ctx) => ctx.reply(await exchanges.genWalletFeature('eth')));
