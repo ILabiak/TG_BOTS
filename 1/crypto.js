@@ -196,7 +196,7 @@ const temp = new Crypto;
 
  (async () => {
 
-  console.dir(await temp.currencyexchanger(0.1,'btc','usd'));
+  //console.dir(await temp.currencyexchanger(0.1,'btc','usd'));
 
 })(); 
 

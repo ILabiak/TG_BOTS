@@ -40,9 +40,13 @@ class Wallet {
     const link = 'https://' + this.defaultUrl + path;
     const result = [];
     const getInfo = await safeGet(link);
-    result.push(`Total received: ${getInfo.total_received} satoshis`);
-    result.push(`Total send: ${getInfo.total_sent} satoshis`);
-    result.push(`Balance: ${getInfo.balance} satoshis`);
+    const received = await (crypto.currencyexchanger((getInfo.total_received / 100000000),'btc','usd'));
+    const sent = await (crypto.currencyexchanger((getInfo.total_sent / 100000000),'btc','usd'));
+    const balance = await (crypto.currencyexchanger((getInfo.balance / 100000000),'btc','usd'));
+    result.push(`Total received: ${received[0]} USD`);
+    result.push(`Total send: ${sent[0]} USD`);
+    result.push(`Balance: ${balance[0]} USD`);
+    result.push(`Details: https://www.blockchain.com/btc/address/${adrs}`)
     //console.log(`${result.join('\n')}\n`);
     return result.join('\n');
   }

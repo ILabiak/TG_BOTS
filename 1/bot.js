@@ -25,11 +25,12 @@ bot.hears('Bitcoin price', async (ctx) => ctx.reply(await crypto.cryptoPrices('b
 bot.hears('Ethereum price', async (ctx) => ctx.reply(await crypto.cryptoPrices('eth')));
 bot.hears('Litecoin price', async (ctx) => ctx.reply(await crypto.cryptoPrices('ltc')));
 
-bot.command('test',async  (ctx)=> {
+bot.command('addressinfo',async  (ctx)=> {
     let adr = ctx.update.message.text.split(' ')[1];
     if(adr === undefined || adr.length != 34 ){
         ctx.reply('Wrong address');
         return;
     }
     ctx.reply(await exchanges.btcAdrBalance(adr));
-})
+});
+
