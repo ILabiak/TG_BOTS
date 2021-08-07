@@ -3,7 +3,7 @@ const Extra = require('telegraf/extra')
 const Markup = require('telegraf/markup')
 const fetch = require('node-fetch');
 
-const bot = new Telegraf('1928863484:AAGls_cY8lSsbrPuPc41VowdBAE_S89WFsA')
+const bot = new Telegraf('123')
     bot.start((ctx) => ctx.reply('Welcome!'))
     bot.help((ctx) => ctx.reply('Send me a sticker'))
     bot.on('sticker', (ctx) => ctx.reply('👍'))
