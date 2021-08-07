@@ -6,7 +6,7 @@ const fetch = require('node-fetch');
 const { Crypto } = require('./crypto.js');
 const exchanges = require('./exchanges.js');
 
-const bot = new Telegraf('token')
+const bot = new Telegraf('1803553886:AAF3IXViYwv2jLeG5D5HpbycovJh4twHtkE')
     bot.start((ctx) => ctx.reply('Welcome!'))
     //bot.help((ctx) => ctx.reply('Send me a sticker'))
     //bot.on('sticker', (ctx) => ctx.reply('👍'))
