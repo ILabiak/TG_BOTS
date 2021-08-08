@@ -16,12 +16,22 @@ const fetch = require('node-fetch');
     headers: {'Cookie': 'sessionid=6676764249%3AatMChwpRYeS4zA%3A9; Expires=1659894211; Domain=.instagram.com; Secure;'}
 }) */
 (async()=>{
-    let res = await fetch('https://www.instagram.com/',{
-        headers: {'Cookie': 'sessionid=6676764249%3AatMChwpRYeS4zA%3A9; Domain=.instagram.com; '}
-    })
-    .then(res => res.text())
-    .then(body => body.includes('viewer":{"biography'));
+    async function checkForValid(sessionIdCookie){
+        if(typeof(sessionIdCookie)=== 'string'){
+            let res = await fetch('https://www.instagram.com/',{
+                headers: {'Cookie': `sessionid=${sessionIdCookie}; Domain=.instagram.com; `}
+            })
+            .then(res => res.text())
+            .then(body => body.includes('viewer":{"biography'));
+            return res;
+        }else{
+            console.log('wrong format');
+            console.dir(typeof(sessionIdCookie))
+        }
+    }
+
+
     
-    console.log(res + 'lol')
+    console.log(await checkForValid('6676764249%3AatMChwpRYeS4zA%3A9'))
 
 })()
