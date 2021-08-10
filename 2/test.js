@@ -9,32 +9,25 @@ const checkForValid = (async(sessionIdCookie) => {
         })
         .then(res => res.text())
         .then(body => {
-            let data = []
-            let arr = body.split('\n')
+            let data = [];
+            let arr = body.split('\n');
             for(let el of arr){
                 if(el.includes('viewer":{"biography')){
-                    data.push(el)
+                    data.push(el);
                 }
             }
             if(data[0]){
                 let text = data[0];
-                let usernameStart = text.indexOf('username":"')+11
-                let usernameEnd = text.indexOf('","badge_count"')
-                let username = text.slice(usernameStart,usernameEnd)
-                let userLink = `https://www.instagram.com/${username}/`
-                console.log(userLink)
-
+                let usernameStart = text.indexOf('username":"')+11;
+                let usernameEnd = text.indexOf('","badge_count"');
+                let username = text.slice(usernameStart,usernameEnd);
+                let usernameOutput = `https://www.instagram.com/${username}/`;
+                return `Валид\n${usernameOutput}`;
             }else{
-                console.log('err')
+                return 'Невалид';
             }
-
         })
-      /*   .then(body =>{
-          if(body.includes('viewer":{"biography')){
-            return 'Валид';
-          }else return 'Невалид';
-          })
-        return res; */
+        return res; 
     }else{
         ctx.reply('wrong format');
         ctx.reply(typeof(sessionIdCookie));
@@ -43,6 +36,7 @@ const checkForValid = (async(sessionIdCookie) => {
 
 (async()=>{
 
-await checkForValid('198404570%3AzaNKYcYR1xgwAY%3A19')
+let res  = await checkForValid('198404570%3AzaNKYcYR1xgwAY%3A19')
+console.log(res)
 
 })()
