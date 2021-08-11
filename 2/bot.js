@@ -1,6 +1,6 @@
 "use strict";
 
-const { Telegraf } = require("telegraf");
+const { Telegraf, Extra } = require("telegraf");
 const fetch = require("node-fetch");
 const fs = require("fs");
 
@@ -9,6 +9,7 @@ bot.start((ctx) => ctx.reply("Привет, это чекер куков Instagr
 bot.use();
 bot.launch();
 bot.on("document", async (ctx) => {
+  let messageId = ctx.update.message.message_id;
   let fileId = ctx.update.message.document.file_id;
   // console.log(fileId);
   let link = await ctx.telegram.getFileLink(fileId);
@@ -19,8 +20,9 @@ bot.on("document", async (ctx) => {
   for (let cookie of cookies) {
     results.push(await checkForValid(cookie));
   }
-  await ctx.reply(results.join("\n"));
+  await ctx.reply(results.join("\n"), Extra.inReplyTo(messageId));
   cookies = [];
+  results = [];
 });
 
 const downloadFile = async (url, path = "./cookies/1.txt") => {
@@ -105,3 +107,9 @@ const checkForValid = async (sessionIdCookie) => {
     ctx.reply(typeof sessionIdCookie);
   }
 };
+
+bot.on('sticker', async (ctx) =>{
+  //console.log(ctx.update.message.message_id);
+  let messageId = ctx.update.message.message_id;
+  ctx.reply('response', Extra.inReplyTo(messageId))
+})
