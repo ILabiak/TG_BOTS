@@ -90,6 +90,8 @@ const checkForValid = async (sessionIdCookie) => {
                 let endStr = text.indexOf("- See Instagram photos");
                 let accountInfo = text.slice(startStr, endStr);
                 return `${usernameOutput}\n${accountInfo}`;
+              }else{
+                return 'Couldn\'t find account data';
               }
             });
           return secondRequest;
