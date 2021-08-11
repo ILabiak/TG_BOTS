@@ -51,11 +51,11 @@ const fs = require('fs');
 
   const checkForValid = (async(sessionIdCookie) => {
     if(typeof(sessionIdCookie)=== 'string'){
-        let res = await fetch('https://www.instagram.com/',{
+        let request = await fetch('https://www.instagram.com/',{
             headers: {'Cookie': `sessionid=${sessionIdCookie}; Domain=.instagram.com; `}
         })
-        .then(res => res.text())
-        .then(body => {
+        .then(request => request.text())
+        .then(async body => {
             let data = [];
             let arr = body.split('\n');
             for(let el of arr){
@@ -69,12 +69,33 @@ const fs = require('fs');
                 let usernameEnd = text.indexOf('","badge_count"');
                 let username = text.slice(usernameStart,usernameEnd);
                 let usernameOutput = `https://www.instagram.com/${username}/`;
-                return `Валид\n${usernameOutput}`;
+                
+                let secondRequest = await fetch(usernameOutput,{
+                    headers: {'Cookie': `sessionid=${sessionIdCookie}; Domain=.instagram.com; `}
+                })
+                .then(secondRequest =>  secondRequest.text())
+                .then(body => {
+                    let data = [];
+                    let arr = body.split('\n');
+                        for(let el of arr){
+                     if(el.includes('<meta content="')){
+                    data.push(el);
+                }}
+                if(data[0]){
+                    let text = data[0]
+                    let startStr = text.indexOf('content="')+9
+                    let endStr = text.indexOf('- See Instagram photos')
+                    let accountInfo = text.slice(startStr,endStr)
+                    return `${usernameOutput}\n${accountInfo}`;
+
+                    }
+                })
+            return secondRequest;
             }else{
                 return 'Невалид';
             }
         })
-        return res; 
+        return request; 
     }else{
         ctx.reply('wrong format');
         ctx.reply(typeof(sessionIdCookie));
