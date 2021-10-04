@@ -4,7 +4,7 @@ const { Telegraf, Extra } = require("telegraf");
 const fetch = require("node-fetch");
 const fs = require("fs");
 
-const bot = new Telegraf("1902863827:AAEhouxVdgdSu9wqnd4jCgi9SLL1BWPUYIY");
+const bot = new Telegraf("token");
 bot.start((ctx) => ctx.reply("Привет, это чекер куков Instagram!"));
 bot.use();
 bot.launch();
