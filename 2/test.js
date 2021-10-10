@@ -60,6 +60,6 @@ const checkForValid = async (sessionIdCookie) => {
 };
 
 (async () => {
-  console.log(await checkForValid("198404570%3AzaNKYcYR1xgwAY%3A19"));
+  console.log(await checkForValid("6317576443%3AfUDnSzwpCxXO22%3A17"));
   //console.log(res)
 })();

@@ -40,9 +40,15 @@ const getSessionIds = async (path = "cookies/1.txt") => {
   let sessionIds = [];
   for (let el of textArr) {
     if (el.includes(".instagram.com") && el.includes("sessionid")) {
+      console.dir(el)
       let start = el.lastIndexOf("\t") + 1;
       let end = el.lastIndexOf("\r");
-      let sessionId = el.slice(start, end);
+      let sessionId;
+      if(end < start){
+        sessionId = el.slice(start);
+      }else{
+        sessionId = el.slice(start, end);
+      }
       sessionIds.push(sessionId);
     }
   }
