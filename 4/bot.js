@@ -19,14 +19,37 @@ const qiwi = new QiwiApi({
 
 const paymentAmountScene = new Scene('paymentAmount')
 paymentAmountScene.enter(({ reply }) =>
-reply('Введите сумму пополнения(не менее 50 рублей):', Markup
-  .keyboard(['Меню'])
-  .oneTime()
-  .resize()
-  .extra()
+reply( 'Введите сумму пополнения(не менее 50 рублей):' , Markup
+  .keyboard(['Меню']).oneTime().resize().extra()
 ))
-paymentAmountScene.hears('Отменить', leave('greeter'))
+paymentAmountScene.hears('Меню', leave('greeter'))
 paymentAmountScene.on('message', (ctx) => {
+//console.dir(ctx.session.__scenes.state.amount)
+if(parseInt(ctx.message.text)>=50){
+  let paymentAmount = ctx.message.text;
+  ctx.scene.enter('paymentMethod', {amount : paymentAmount})
+}
+else{
+  ctx.scene.enter('greeter')
+}
+})
+
+
+
+const paymentMethodScene = new Scene('paymentMethod')
+paymentMethodScene.enter(({ reply }) =>
+reply( 'Выберите способ оплаты:' , Markup
+  .keyboard(['Qiwi', '...', 'Меню']).oneTime().resize().extra()
+))
+paymentMethodScene.hears('Меню', leave('greeter'))
+paymentMethodScene.hears('Qiwi', (ctx) => {
+  
+  ctx.reply(ctx.session.__scenes.state.amount)
+  
+  })
+paymentMethodScene.hears('...', leave('greeter'))
+paymentMethodScene.on('message', (ctx) => {
+console.dir(ctx.session.__scenes.state.amount)
 if(parseInt(ctx.message.text)>=50){
   
 }
@@ -41,7 +64,7 @@ else{
 const stage = new Stage([paymentAmountScene, paymentMethodScene], { ttl: 10 })
 bot.use(session())
 bot.use(stage.middleware())
-bot.hears('Пополнить💲', (ctx) => ctx.scene.enter('paymentAmount'))
+bot.hears('Пополнить💲', (ctx) => ctx.scene.enter('paymentAmount', {amount : 100}))
 bot.command('test', ({ reply }) =>
   reply('Выберите действие', Markup
     .keyboard(['Пополнить💲'])
