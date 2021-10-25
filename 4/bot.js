@@ -1,13 +1,16 @@
 "use strict";
 
-const config = require('config');
+//const config = require('config');
+const config = require('./config/config.json');
+
 const { Telegraf, Extra } = require("telegraf");
+const { bot_token } = require('./config/default');
 const QiwiApi = require('./qiwi')
-const bot = new Telegraf(config.get('Admin.bot_token'));
+const bot = new Telegraf(config.bot_token);
 
 const qiwi = new QiwiApi({
-  accessToken: config.get('Admin.qiwi_token'), // Токен кошелька https://qiwi.com/api
-  personId: config.get('Admin.qiwi_number') // Номер кошелька
+  accessToken: config.qiwi_token, // Токен кошелька https://qiwi.com/api
+  personId: config.qiwi_number // Номер кошелька
 });
 
 bot.start((ctx) => ctx.reply("Привет, это бот nakru-ti!!!"));
