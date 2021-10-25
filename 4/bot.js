@@ -10,7 +10,7 @@ const qiwi = new QiwiApi({
   personId: config.get('Admin.qiwi_number') // Номер кошелька
 });
 
-bot.start((ctx) => ctx.reply("Привет, это бот nakru-ti!"));
+bot.start((ctx) => ctx.reply("Привет, это бот nakru-ti!!!"));
 bot.use();
 bot.launch();
 
