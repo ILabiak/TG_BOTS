@@ -43,12 +43,28 @@ reply( 'Выберите способ оплаты:' , Markup
 ))
 paymentMethodScene.hears('Меню', leave('greeter'))
 paymentMethodScene.hears('Qiwi', (ctx) => {
-  
-  ctx.reply(ctx.session.__scenes.state.amount)
-  
+  let paymentAmount = ctx.session.__scenes.state.amount;
+  ctx.scene.enter('qiwiPayment', {amount : paymentAmount})
   })
 paymentMethodScene.hears('...', leave('greeter'))
-paymentMethodScene.on('message', (ctx) => {
+paymentMethodScene.on('message', (ctx) => ctx.reply('Message'))
+
+
+
+const qiwiPaymentScene = new Scene('qiwiPayment')
+qiwiPaymentScene.enter(async (ctx) =>{
+  await ctx.reply('Перейдите по ссылке, оплатите, и нажмите кнопку \"Проверить оплату\"')
+  ctx.reply(`https://qiwi.com/payment/form/99?amountInteger=${ctx.session.__scenes.state.amount}&amountFraction=0&currency=643&extra%5B%27comment%27%5D=${ctx.session.__scenes.expires}&extra%5B%27account%27%5D=${config.qiwi_number}&blocked%5B0%5D=comment&blocked%5B1%5D=account&blocked%5B2%5D=sum`,
+  Markup.keyboard(['Проверить оплату', 'Меню']).oneTime().resize().extra())
+})
+qiwiPaymentScene.hears('Меню', leave('greeter'))
+qiwiPaymentScene.hears('Проверить оплату', async (ctx) => {
+  await receivePayment()
+ // console.dir(ctx.session.__scenes.expires)
+  
+  })
+qiwiPaymentScene.hears('...', leave('greeter'))
+qiwiPaymentScene.on('message', (ctx) => {
 console.dir(ctx.session.__scenes.state.amount)
 if(parseInt(ctx.message.text)>=50){
   
@@ -59,9 +75,7 @@ else{
 })
 
 
-
-
-const stage = new Stage([paymentAmountScene, paymentMethodScene], { ttl: 10 })
+const stage = new Stage([paymentAmountScene, paymentMethodScene,qiwiPaymentScene], { ttl: 10 })
 bot.use(session())
 bot.use(stage.middleware())
 bot.hears('Пополнить💲', (ctx) => ctx.scene.enter('paymentAmount', {amount : 100}))
@@ -93,8 +107,3 @@ const receivePayment = async(paymentComment, sum) =>{
       }
   } 
   }
-  
-  (async()=>{
-  
-     // await receivePayment('2809477',100)
-  })()
