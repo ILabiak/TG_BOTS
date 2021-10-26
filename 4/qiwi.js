@@ -68,7 +68,7 @@ module.exports = class QiwiBot {
     let { personId } = this.props;
     return await this.sendAuthenticatedRequest({
       method: "GET",
-      url: `/payment-history/v2/persons/${personId}/payments?rows=4`
+      url: `/payment-history/v2/persons/${personId}/payments?rows=25`
     });
   };
 

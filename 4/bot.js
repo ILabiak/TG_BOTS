@@ -19,13 +19,13 @@ const qiwi = new QiwiApi({
 
 const paymentAmountScene = new Scene('paymentAmount')
 paymentAmountScene.enter(({ reply }) =>
-reply( 'Введите сумму пополнения(не менее 50 рублей):' , Markup
+reply( 'Введите сумму пополнения(не менее 0 рублей):' , Markup
   .keyboard(['Меню']).oneTime().resize().extra()
 ))
 paymentAmountScene.hears('Меню', leave('greeter'))
 paymentAmountScene.on('message', (ctx) => {
 //console.dir(ctx.session.__scenes.state.amount)
-if(parseInt(ctx.message.text)>=50){
+if(parseInt(ctx.message.text)>=0){
   let paymentAmount = ctx.message.text;
   ctx.scene.enter('paymentMethod', {amount : paymentAmount})
 }
@@ -59,7 +59,15 @@ qiwiPaymentScene.enter(async (ctx) =>{
 })
 qiwiPaymentScene.hears('Меню', leave('greeter'))
 qiwiPaymentScene.hears('Проверить оплату', async (ctx) => {
-  await receivePayment()
+  let paymentText = ctx.session.__scenes.expires.toString()
+  let paymentAmount = ctx.session.__scenes.state.amount
+  console.dir({paymentText,paymentAmount})
+ let paymentRes = await receivePayment(paymentText,paymentAmount)
+  if(paymentRes == 1){
+  await  ctx.reply('Ваш баланс успешно пополнен')
+  }else{
+   await ctx.reply('Платеж не получен')
+  }
  // console.dir(ctx.session.__scenes.expires)
   
   })
@@ -75,7 +83,7 @@ else{
 })
 
 
-const stage = new Stage([paymentAmountScene, paymentMethodScene,qiwiPaymentScene], { ttl: 10 })
+const stage = new Stage([paymentAmountScene, paymentMethodScene,qiwiPaymentScene], { ttl: 500 })
 bot.use(session())
 bot.use(stage.middleware())
 bot.hears('Пополнить💲', (ctx) => ctx.scene.enter('paymentAmount', {amount : 100}))
@@ -98,12 +106,12 @@ bot.on('sticker', async (ctx) =>{
 })
 
 const receivePayment = async(paymentComment, sum) =>{
-  txsList = await qiwi.transactionsList();
-  txArr = txsList.data
-  
+  let txsList = await qiwi.transactionsList();
+  let txArr = txsList.data
    for(let el of txArr){
       if(el.sum.amount == sum && el.comment.includes(paymentComment)){
-          console.dir(el)
+          return 1;
       }
-  } 
+  }
+  return 0; 
   }
