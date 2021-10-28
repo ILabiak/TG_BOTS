@@ -10,12 +10,15 @@ const Markup = require('telegraf/markup')
 const { enter, leave } = Stage
 
 const QiwiApi = require('./qiwi')
+const api = require('./api');
 const bot = new Telegraf(config.bot_token);
 
 const qiwi = new QiwiApi({
   accessToken: config.qiwi_token, // Токен кошелька https://qiwi.com/api
   personId: config.qiwi_number // Номер кошелька
 });
+
+
 
 const paymentAmountScene = new Scene('paymentAmount')
 paymentAmountScene.enter(({ reply }) =>
@@ -24,7 +27,6 @@ reply( 'Введите сумму пополнения(не менее 0 руб�
 ))
 paymentAmountScene.hears('Меню', leave('greeter'))
 paymentAmountScene.on('message', (ctx) => {
-//console.dir(ctx.session.__scenes.state.amount)
 if(parseInt(ctx.message.text)>=0){
   let paymentAmount = ctx.message.text;
   ctx.scene.enter('paymentMethod', {amount : paymentAmount})
@@ -33,7 +35,6 @@ else{
   ctx.scene.enter('greeter')
 }
 })
-
 
 
 const paymentMethodScene = new Scene('paymentMethod')
@@ -48,7 +49,6 @@ paymentMethodScene.hears('Qiwi', (ctx) => {
   })
 paymentMethodScene.hears('...', leave('greeter'))
 paymentMethodScene.on('message', (ctx) => ctx.reply('Message'))
-
 
 
 const qiwiPaymentScene = new Scene('qiwiPayment')
@@ -68,18 +68,10 @@ qiwiPaymentScene.hears('Проверить оплату', async (ctx) => {
   }else{
    await ctx.reply('Платеж не получен')
   }
- // console.dir(ctx.session.__scenes.expires)
-  
-  })
+})
 qiwiPaymentScene.hears('...', leave('greeter'))
 qiwiPaymentScene.on('message', (ctx) => {
 console.dir(ctx.session.__scenes.state.amount)
-if(parseInt(ctx.message.text)>=50){
-  
-}
-else{
-  ctx.scene.enter('greeter')
-}
 })
 
 
@@ -98,11 +90,8 @@ bot.command('test', ({ reply }) =>
 bot.launch();
 
 
-
-
 bot.on('sticker', async (ctx) =>{
-  //console.log(ctx.update.message.message_id);
-  let messageId = ctx.update.message.message_id;
+ctx.reply('STICKER')
 })
 
 const receivePayment = async(paymentComment, sum) =>{
