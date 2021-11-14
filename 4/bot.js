@@ -75,7 +75,7 @@ console.dir(ctx.session.__scenes.state.amount)
 })
 
 
-const stage = new Stage([paymentAmountScene, paymentMethodScene,qiwiPaymentScene], { ttl: 500 })
+const stage = new Stage([paymentAmountScene, paymentMethodScene,qiwiPaymentScene], { ttl: 1000 })
 bot.use(session())
 bot.use(stage.middleware())
 bot.hears('Пополнить💲', (ctx) => ctx.scene.enter('paymentAmount', {amount : 100}))

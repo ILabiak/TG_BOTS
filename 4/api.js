@@ -20,3 +20,14 @@ module.exports = {addPayment}
             return 0;
         }
     }
+
+    async function getServices() {
+const res = await axios.get(`https://nakru-ti.ru/api/v2/?key=${config.website_token}&action=services`).then((response) => {
+    return response.data
+    });
+    return res;
+    }
+    
+    (async() => {
+        console.dir(await getServices())
+    })()
