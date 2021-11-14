@@ -87,6 +87,9 @@ bot.command('test', ({ reply }) =>
     .extra()
   )
 )
+bot.hears('id', (ctx) =>{
+  console.dir(ctx.update.message.from.id)
+})
 bot.launch();
 
 
