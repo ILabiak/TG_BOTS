@@ -18,7 +18,7 @@ const con = mysql.createConnection({
 
 //let arr =await getUserOrders(868619239)
 //console.dir(await getUserBalance(868619239))
-console.dir(await addUserToDB(868619231,'frozzz'))
+console.dir(await addBalance(868619239,25))
 
   })()
 
@@ -64,5 +64,14 @@ async function addUserToDB(telegram_id,username){
     let res = await(sqlRequest(sql))
     if(res.affectedRows ==1) return true;
   }
+return false;
+}
+
+async function addBalance(telegram_id,amount){
+let balance = await getUserBalance(telegram_id);
+balance +=amount;
+let sql = `UPDATE \`nakruti\` SET \`balance\` = \'${balance.toString()}\' WHERE \`nakruti\`.\`telegram_id\` = ${telegram_id.toString()};`
+let res = await(sqlRequest(sql))
+if(res.changedRows ==1)return true;
 return false;
 }
