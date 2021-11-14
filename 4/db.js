@@ -9,14 +9,35 @@ const con = mysql.createConnection({
   password: config.db_password,
 });
 
-con.connect(function(err) {
-  if (err) throw err;
-  console.log("Connected!");
-  
-});
+(async() =>{
+  await con.connect(function(err) {
+    if (err) throw err;
+    console.log("Connected!");
+    
+  });
 
-con.query("SELECT * FROM `nakruti`", function (error, results) {
-  if (error) throw error;
-  //console.dir(results)
-  console.log('The solution is: ', results[0]);
-});
+const text = "SELECT order_ids FROM `nakruti` WHERE `telegram_id` = 868619239"
+
+console.dir(await sqlRequest(text))
+
+  })()
+
+async function sqlRequest(sql){
+  let res;
+  const promise = new Promise(function(resolve, reject){
+    con.query(
+      sql, 
+        function(err, rows){                                                
+            if(rows === undefined){
+                reject(new Error("Error rows is undefined"));
+            }else{
+                resolve(rows);
+            }
+        }
+    )}
+)
+  await promise.then(function(results){
+    res = results;
+  })
+  return res;
+}

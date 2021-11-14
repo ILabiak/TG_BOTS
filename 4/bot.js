@@ -88,7 +88,7 @@ bot.command('test', ({ reply }) =>
   )
 )
 bot.hears('id', (ctx) =>{
-  console.dir(ctx.update.message.from.id)
+  console.dir(ctx.update.message.from)
 })
 bot.launch();
 
