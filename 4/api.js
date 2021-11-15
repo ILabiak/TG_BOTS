@@ -2,7 +2,7 @@
 const config = require('./config/config.json');
 const axios = require('axios');
 
-module.exports = {addPayment, getServices, makeOrder, getOrderStatus, getCategories, getCategoryServices}
+module.exports = {addPayment, getServices, makeOrder, getOrderStatus, getCategories, getCategoryServices, getServiceDetails}
 
     async function addPayment(username,amount) {
         const res = await axios.post('https://nakru-ti.ru/adminapi/v1', {
@@ -80,6 +80,25 @@ module.exports = {addPayment, getServices, makeOrder, getOrderStatus, getCategor
     return services;
     }
 
+    async function getServiceDetails(arr,serviceId){
+    let text;
+    let min, max;
+for(let obj of arr){
+    let str = obj.name;
+    let index = str.indexOf(':')
+    let id = str.slice(2,index);
+    if(id == serviceId){ 
+    min = obj.min
+    max = obj.max
+    text = `
+Цена: ${obj.rate} руб.
+Минимальный заказ: ${obj.min}
+Максимальный заказ: ${obj.max}
+`
+       }
+    }
+    return {text, min,max};
+    }
     (async() => {
 
    // console.log(await getOrderStatus(32593))

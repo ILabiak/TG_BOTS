@@ -90,8 +90,10 @@ servicesScene.on('message', async (ctx) => {
   if(ctx.update.message.text.includes('ID')){
     const str = ctx.update.message.text;
     const index = str.indexOf(':')
-    const serviceId =str.slice(2,index);
-    console.log(serviceId)
+    const serviceId = str.slice(2,index);
+    const services = await api.getServices();
+    let serviceDetails = await api.getServiceDetails(services, serviceId)
+   await ctx.reply(serviceDetails.text)
   }
 
 })

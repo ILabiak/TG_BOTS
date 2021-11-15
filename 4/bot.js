@@ -20,7 +20,6 @@ const qiwi = new QiwiApi({
 });
 
 
-
 const stage = new Stage([scenes.paymentAmountScene, scenes.paymentMethodScene,scenes.qiwiPaymentScene, scenes.categoryScene, scenes.servicesScene], { ttl: 1800 })
 bot.use(session())
 bot.use(stage.middleware())
