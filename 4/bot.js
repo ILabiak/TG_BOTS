@@ -25,14 +25,14 @@ paymentAmountScene.enter(({ reply }) =>
 reply( 'Введите сумму пополнения(не менее 0 рублей):' , Markup
   .keyboard(['Меню']).oneTime().resize().extra()
 ))
-paymentAmountScene.hears('Меню', leave('greeter'))
+paymentAmountScene.hears('Меню', leave('paymentAmount'))
 paymentAmountScene.on('message', (ctx) => {
 if(parseInt(ctx.message.text)>=0){
   let paymentAmount = ctx.message.text;
   ctx.scene.enter('paymentMethod', {amount : paymentAmount})
 }
 else{
-  ctx.scene.enter('greeter')
+  ctx.scene.enter('paymentAmount')
 }
 })
 
@@ -74,14 +74,50 @@ qiwiPaymentScene.on('message', (ctx) => {
 console.dir(ctx.session.__scenes.state.amount)
 })
 
+const categoryScene = new Scene('category')
+categoryScene.enter(async({ reply }) =>{
+  const services = await api.getServices();
+  const categories = await api.getCategories(services);
+reply( 'Выберите категорию:' , Markup
+  .keyboard(categories).oneTime().resize().extra()
+)})
+categoryScene.hears('Меню', leave('category'))
+categoryScene.on('message', async (ctx) => {
+  const services = await api.getServices();
+  const categories = await api.getCategories(services);
+if(categories.includes(ctx.update.message.text)){
+  ctx.scene.enter('services', {category : ctx.update.message.text})
+}
+})
 
-const stage = new Stage([paymentAmountScene, paymentMethodScene,qiwiPaymentScene], { ttl: 1000 })
+const servicesScene = new Scene('services')
+servicesScene.enter(async(ctx) =>{
+const category = ctx.session.__scenes.state.category
+const servicesList = await api.getServices();
+const services = await api.getCategoryServices(servicesList,category)
+ctx.reply( 'Выберите услугу:' , Markup
+  .keyboard(services).oneTime().resize().extra()
+)})
+servicesScene.hears('Меню', leave('services'))
+servicesScene.on('message', async (ctx) => {
+  if(ctx.update.message.text.includes('ID')){
+    const str = ctx.update.message.text;
+    const index = str.indexOf(':')
+    const serviceId =str.slice(2,index);
+    console.log(serviceId)
+  }
+
+})
+
+
+const stage = new Stage([paymentAmountScene, paymentMethodScene,qiwiPaymentScene, categoryScene, servicesScene, serviceScene], { ttl: 1000 })
 bot.use(session())
 bot.use(stage.middleware())
 bot.hears('Пополнить💲', (ctx) => ctx.scene.enter('paymentAmount', {amount : 100}))
+bot.hears('Услуги', (ctx) => ctx.scene.enter('category'))
 bot.command('test', ({ reply }) =>
   reply('Выберите действие', Markup
-    .keyboard(['Пополнить💲'])
+    .keyboard(['Пополнить💲', 'Услуги'])
     .oneTime()
     .resize()
     .extra()
