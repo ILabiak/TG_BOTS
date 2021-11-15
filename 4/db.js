@@ -18,7 +18,7 @@ const con = mysql.createConnection({
 
 //let arr =await getUserOrders(868619239)
 //console.dir(await getUserBalance(868619239))
-console.dir(await getUserOrders(868619239))
+console.dir(await addOrderId(868619239,'inst.com',112,11))
 
   })()
 
@@ -76,14 +76,18 @@ if(res.changedRows ==1)return true;
 return false;
 }
 
-async function addOrderId(telegram_id,orderId){
+async function addOrderId(telegram_id,link, charge, orderId){
 let orders = await getUserOrders(telegram_id)
 if(orders.length >100){
   orders.pop();
 }
-orders.unshift(orderId)
-let sql = `UPDATE \`nakruti\` SET \`order_ids\` = \'[${orders.join()}]\' WHERE \`nakruti\`.\`telegram_id\` = ${telegram_id.toString()};`
+orders.unshift({
+  link : link,
+  charge : charge,
+  orderId : orderId,
+})
+ let sql = `UPDATE \`nakruti\` SET \`order_ids\` = \'${JSON.stringify(orders)}\' WHERE \`nakruti\`.\`telegram_id\` = ${telegram_id.toString()};`
 let res = await(sqlRequest(sql))
 if(res.changedRows ==1)return true;
-return false;
+return false; 
 }
