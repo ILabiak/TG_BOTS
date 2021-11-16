@@ -11,6 +11,9 @@ const { enter, leave } = Stage
 
 const QiwiApi = require('./qiwi')
 const api = require('./api');
+const db = require('./db')
+
+
 const scenes = require('./scenes')
 const bot = new Telegraf(config.bot_token);
 
@@ -36,7 +39,25 @@ bot.command('test', ({ reply }) =>
 bot.hears('id', (ctx) =>{
   console.dir(ctx.update.message.from)
 })
-bot.launch();
+bot.command('start', async (ctx) =>{
+
+  const tgId = ctx.update.message.from.id
+  const tgUsername = ctx.update.message.from.username
+  ctx.reply(`Привет, @${tgUsername}`)
+  console.dir(tgId)
+}
+
+);
+(async()=>{
+
+  await db.con.connect(function(err) {
+    if (err) throw err;
+    console.log("Connected!");
+    
+  });
+  bot.launch();
+
+  })()
 
 
 const receivePayment = async(paymentComment, sum) =>{

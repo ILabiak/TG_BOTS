@@ -10,15 +10,15 @@ const con = mysql.createConnection({
 });
 
 (async() =>{
-  await con.connect(function(err) {
+
+/*   await con.connect(function(err) {
     if (err) throw err;
     console.log("Connected!");
-    
-  });
-
+  }) */
 //let arr =await getUserOrders(868619239)
 //console.dir(await getUserBalance(868619239))
-console.dir(await addOrderId(868619239,'inst.com',112,11))
+//console.dir(await addOrderId(868619239,'inst.com',112,11))
+//console.dir(await checkUserExistence(868619239))
 
   })()
 
@@ -91,3 +91,12 @@ let res = await(sqlRequest(sql))
 if(res.changedRows ==1)return true;
 return false; 
 }
+
+async function checkUserExistence(telegram_id){
+  let sql = `SELECT * FROM \`nakruti\` WHERE \`telegram_id\` = ${telegram_id.toString()}`;
+  let res = await(sqlRequest(sql))
+  if(res[0] === undefined) return false;
+  return true;
+}
+
+module.exports = {con, getUserOrders, getUserBalance, addUserToDB, addBalance, addOrderId}
