@@ -2,13 +2,19 @@
 const mysql = require('mysql');
 const config = require('./config/config.json');
 
-const con = mysql.createConnection({
+let con;
+async function startDataBase(){
+con = mysql.createConnection({
   host: config.db_host,
   user: config.db_user,
   database: config.db_database,
   password: config.db_password,
 });
-
+await con.connect(function(err) {
+  if (err) throw err;
+  console.log("Connected!");
+})
+}
 (async() =>{
 
 /*   await con.connect(function(err) {
@@ -99,4 +105,4 @@ async function checkUserExistence(telegram_id){
   return true;
 }
 
-module.exports = {con, getUserOrders, getUserBalance, addUserToDB, addBalance, addOrderId}
+module.exports = {startDataBase, getUserOrders, getUserBalance, addUserToDB, addBalance, addOrderId, checkUserExistence}

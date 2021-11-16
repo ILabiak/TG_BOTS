@@ -14,7 +14,8 @@ const api = require('./api');
 const db = require('./db')
 
 
-const scenes = require('./scenes')
+const scenes = require('./scenes');
+const { createGunzip } = require('zlib');
 const bot = new Telegraf(config.bot_token);
 
 const qiwi = new QiwiApi({
@@ -43,21 +44,34 @@ bot.command('start', async (ctx) =>{
 
   const tgId = ctx.update.message.from.id
   const tgUsername = ctx.update.message.from.username
-  ctx.reply(`Привет, @${tgUsername}`)
-  console.dir(tgId)
+  //ctx.reply(`Привет, @${tgUsername}`)
+  const exists = await (db.checkUserExistence(tgId))
+  if(!exists) {
+    await db.addUserToDB(tgId,tgUsername)
+  ctx.reply(`Здраствуйте, это бот накрутки`)
+  ctx.reply( `${tgId} - ${tgUsername}`)
+                                        // Доробити перехід в сцену головного меню
+  return;
+  }
+  ctx.reply('С возвращением')
+                                      // Доробити перехід в сцену головного меню
+return;
 }
 
 );
+
+const start = async() =>{
+  const dbstatus = await db.startDataBase();
+  await bot.launch();
+  }
+
+
 (async()=>{
 
-  await db.con.connect(function(err) {
-    if (err) throw err;
-    console.log("Connected!");
-    
-  });
-  bot.launch();
+await start();
 
   })()
+
 
 
 const receivePayment = async(paymentComment, sum) =>{
