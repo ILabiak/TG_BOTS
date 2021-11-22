@@ -23,7 +23,15 @@ bot.use(session())
 bot.use(stage.middleware())
 bot.hears('Пополнить💲', (ctx) => ctx.scene.enter('paymentAmount', {amount : 100}))
 bot.hears('Услуги', (ctx) => ctx.scene.enter('category'))
-//bot.hears('Моя информация', (ctx) => ctx.scene.enter('accountInfo'))
+bot.hears('Моя информация', async (ctx) => {
+  const tgId = ctx.update.message.from.id
+  const tgUsername = ctx.update.message.from.username
+  const balance = await db.getUserBalance(tgId)
+  ctx.reply(
+`Имя пользователя: @${tgUsername}
+Баланс: ${balance} руб.
+`)
+})
 
 bot.hears('id', (ctx) =>{
   console.dir(ctx.update.message.from)

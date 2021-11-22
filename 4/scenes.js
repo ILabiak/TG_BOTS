@@ -135,5 +135,4 @@ servicesScene.leave((ctx) => ctx.reply('Выберите действие',Marku
   .extra()))
 
 
-
 module.exports = {paymentAmountScene, paymentMethodScene, qiwiPaymentScene, categoryScene, servicesScene, startQiwi}
