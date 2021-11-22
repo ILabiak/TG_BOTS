@@ -49,19 +49,18 @@ bot.command('start', async (ctx) =>{
   if(!exists) {
     await db.addUserToDB(tgId,tgUsername)
   ctx.reply(`Здраствуйте, это бот накрутки`)
-  ctx.reply( `${tgId} - ${tgUsername}`)
-                                        // Доробити перехід в сцену головного меню
+                                        // Доробити клавіатуру головного меню
   return;
   }
   ctx.reply('С возвращением')
-                                      // Доробити перехід в сцену головного меню
+                                      // Доробити клавіатуру головного меню
 return;
 }
 
 );
 
 const start = async() =>{
-  const dbstatus = await db.startDataBase();
+  await db.startDataBase();
   await bot.launch();
   }
 

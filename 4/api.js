@@ -5,7 +5,7 @@ const axios = require('axios');
 module.exports = {addPayment, getServices, makeOrder, getOrderStatus, getCategories, getCategoryServices, getServiceDetails}
 
     async function addPayment(username,amount) {
-        const res = await axios.post('https://nakru-ti.ru/adminapi/v1', {
+        const res = await axios.post(`${config.smm_website}/adminapi/v1`, {
             key: config.website_admin_token,
             action: 'addPayment',
             username: username,
@@ -22,14 +22,14 @@ module.exports = {addPayment, getServices, makeOrder, getOrderStatus, getCategor
     }
 
     async function getServices() {
-    const res = await axios.get(`https://nakru-ti.ru/api/v2/?key=${config.website_token}&action=services`).then((response) => {
+    const res = await axios.get(`${config.smm_website}/api/v2/?key=${config.website_token}&action=services`).then((response) => {
     return response.data
     });
     return res;
     }
 
     async function makeOrder(serviceId, quantity, link) {
-        const res = await axios.get(`https://nakru-ti.ru/api/v2/?key=${config.website_token}&action=add&service=${serviceId}&quantity=${quantity}&link=${link}`)
+        const res = await axios.get(`${config.smm_website}/api/v2/?key=${config.website_token}&action=add&service=${serviceId}&quantity=${quantity}&link=${link}`)
         .then((response) => {
             return response.data
             });
@@ -38,7 +38,7 @@ module.exports = {addPayment, getServices, makeOrder, getOrderStatus, getCategor
     }
         
     async function getOrderStatus(orderId) {
-        const res = await axios.get(`https://nakru-ti.ru/api/v2/?key=${config.website_token}&action=status&order=${orderId}`)
+        const res = await axios.get(`${config.smm_website}/api/v2/?key=${config.website_token}&action=status&order=${orderId}`)
         .then((response) => {
             return response.data
             });
@@ -101,5 +101,5 @@ for(let obj of arr){
     }
     (async() => {
 
-   // console.log(await getOrderStatus(32593))
+  // console.log(await getServices())
     })()
