@@ -74,8 +74,9 @@ return false;
 }
 
 async function addBalance(telegram_id,amount){
-let balance = await getUserBalance(telegram_id);
-balance +=amount;
+const balanceStr = await getUserBalance(telegram_id);
+let balance = parseFloat(balanceStr)
+balance += parseFloat(amount)
 let sql = `UPDATE \`nakruti\` SET \`balance\` = \'${balance.toString()}\' WHERE \`nakruti\`.\`telegram_id\` = ${telegram_id.toString()};`
 let res = await(sqlRequest(sql))
 if(res.changedRows ==1)return true;

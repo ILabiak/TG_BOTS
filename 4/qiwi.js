@@ -112,4 +112,15 @@ module.exports = class QiwiBot {
 
     return response;
   };
+
+  receivePayment = async(paymentComment, sum) =>{
+  let txsList = await this.transactionsList();
+  let txArr = txsList.data
+   for(let el of txArr){
+      if(el.sum.amount == sum && el.comment.includes(paymentComment)){
+          return 1;
+      }
+  }
+  return 0; 
+  }
 }
