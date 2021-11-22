@@ -105,10 +105,7 @@ if(categories.includes(ctx.update.message.text)){
   ctx.scene.enter('services', {category : ctx.update.message.text})
 }
 })
-categoryScene.leave((ctx) => ctx.reply('Выберите действие',Markup
-  .keyboard(['Моя информация', 'Заказать накрутку', 'Мои заказы', 'Пополнить💲', 'Услуги'])
-  .resize()
-  .extra()))
+
 
 const servicesScene = new Scene('services')
 servicesScene.enter(async(ctx) =>{
@@ -126,8 +123,9 @@ servicesScene.on('message', async (ctx) => {
     const serviceId = str.slice(2,index);
     const services = await api.getServices();
     let serviceDetails = await api.getServiceDetails(services, serviceId)
-   await ctx.reply(serviceDetails.text)
+   await ctx.reply(serviceDetails.text, Markup.keyboard(['Меню']).resize().extra())
   }
+  
 })
 servicesScene.leave((ctx) => ctx.reply('Выберите действие',Markup
   .keyboard(['Моя информация', 'Заказать накрутку', 'Мои заказы', 'Пополнить💲', 'Услуги'])
