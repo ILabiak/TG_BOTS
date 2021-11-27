@@ -13,10 +13,7 @@ const { enter, leave } = Stage
 const api = require('./api');
 const db = require('./db')
 const scenes = require('./scenes');
-
 const bot = new Telegraf(config.bot_token);
-
-
 
 const stage = new Stage([scenes.paymentAmountScene, scenes.paymentMethodScene,scenes.qiwiPaymentScene, scenes.categoryScene, scenes.servicesScene], { ttl: 1800 })
 bot.use(session())
