@@ -31,15 +31,17 @@ bot.on("document", async (ctx) => {
         let fileId = ctx.update.message.document.file_id;
         let link = await ctx.telegram.getFileLink(fileId);
         const filename = await downloadFile(link, `./3/download/`,documentName);
-        const dir = await extractArchieve(filename)
-        console.dir({filename,dir})
-        /* const resultDir = dir+ '_result'
+        const dir = await makeDirs(filename)
+       
+        await extractArchieve(filename,dir)
+
+        const resultDir = dir+ '_result'
         const txtFiles = await  getTxtfiles(dir)
-        const result = await checkTxtCookies(txtFiles)
-        const archiveName = await makeArchieve(resultDir)
-        console.dir({filename,dir,resultDir,txtFiles,result,archiveName})
-        await bot.telegram.sendDocument('1351452476',{source :archiveName})
-        bot.telegram.sendMessage('1351452476',result) */
+        //const result = await checkTxtCookies(txtFiles)
+      //  const archiveName = await makeArchieve(resultDir)
+        console.dir({filename,dir,resultDir,txtFiles})
+      //  await bot.telegram.sendDocument('1351452476',{source :archiveName})
+        //bot.telegram.sendMessage('1351452476',result) 
         //await deleteFiles(dir,archiveName)
         
 
@@ -61,8 +63,8 @@ const downloadFile = async (url, path = "./3/download/",filename) => {
         filename = '(1)'+ filename
     }
     const fileStream = fs.createWriteStream(path + filename);
-    https.get(url, function(response) {
-  response.pipe(fileStream);
+    await https.get(url, async function(response) {
+ await response.pipe(fileStream);
 });
 return path + filename;
   };
@@ -74,7 +76,7 @@ return path + filename;
 }
 
 
-const extractArchieve = async (filename) =>{
+const makeDirs = async (filename) =>{
     const newDir =filename.slice(0,-4);
     if (!fs.existsSync(newDir)){
         await fs.mkdirSync(newDir);
@@ -82,12 +84,21 @@ const extractArchieve = async (filename) =>{
     if (!fs.existsSync(newDir+'_result')){
         await fs.mkdirSync(newDir+'_result');
     }
-    let res = await unzip(filename, newDir,res =>{
-        console.log(res)
-    })
-    console.log(res)
       return newDir;
 }
+
+const extractArchieve = async(filename,newDir) =>{
+  console.dir({filename,newDir})
+  const promise = new Promise(function(resolve, reject){
+      unzip(filename, newDir, function(response) {
+          resolve();
+      })})
+  
+    await promise.then(function(results){
+      console.log('done')
+    })
+
+} 
 
 const makeArchieve = async(dir) =>{
 
