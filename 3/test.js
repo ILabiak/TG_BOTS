@@ -1,8 +1,10 @@
 'use strict';
 
 const fs = require("fs");
+let { zip, unzip } = require('cross-unzip')
+
 const dirnames = fs.readdirSync('./3')
-const filename = './3/download/Instagram_cookies.rar'
+const filename = './3/download/insta.zip'
 
 
 const extractArchieve = (filename) =>{
@@ -10,7 +12,10 @@ const extractArchieve = (filename) =>{
     if (!fs.existsSync(newDir)){
         fs.mkdirSync(newDir);
     }
-    fs.createReadStream(filename).pipe(unzip.Extract({ path: newDir }));
+    unzip(filename, newDir, err => {
+        console.log(err)
+      })
+      return true;
 }
 
 
