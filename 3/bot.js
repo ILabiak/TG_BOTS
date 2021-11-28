@@ -175,37 +175,7 @@ const checkForValid = async (sessionIdCookie) => {
             }
           }
           if (data[0]) {
-            let text = data[0];
-            let usernameStart = text.indexOf('username":"') + 11;
-            let usernameEnd = text.indexOf('","badge_count"');
-            let username = text.slice(usernameStart, usernameEnd);
-            let usernameOutput = `https://www.instagram.com/${username}/`;
-  
-            let secondRequest = await fetch(usernameOutput, {
-              headers: {
-                Cookie: `sessionid=${sessionIdCookie}; Domain=.instagram.com; `,
-              },
-            })
-              .then((secondRequest) => secondRequest.text())
-              .then((body) => {
-                let data = [];
-                let arr = body.split("\n");
-                for (let el of arr) {
-                  if (el.includes('<meta content="')) {
-                    data.push(el);
-                  }
-                }
-                if (data[0]) {
-                  let text = data[0];
-                  let startStr = text.indexOf('content="') + 9;
-                  let endStr = text.indexOf("- See Instagram photos");
-                  let accountInfo = text.slice(startStr, endStr);
-                  return `${usernameOutput} - ${accountInfo}\n`;
-                }else{
-                  return 'Couldn\'t find account data\n';
-                }
-              });
-            return secondRequest;
+            return "Валид\n";
           } else {
             return "Невалид\n";
           }
@@ -222,8 +192,6 @@ const checkForValid = async (sessionIdCookie) => {
     let sessionIds = [];
      for (let el of textArr) {
       if (el.includes(".instagram.com") && el.includes("sessionid")) {
-        
-      //  console.dir(el)
         let start = el.lastIndexOf("\t") + 1;
         let end = el.lastIndexOf("\r");
         let sessionId;
