@@ -30,13 +30,11 @@ bot.on("document", async (ctx) => {
         let messageId = ctx.update.message.message_id;
         let fileId = ctx.update.message.document.file_id;
         let link = await ctx.telegram.getFileLink(fileId);
-        console.log(link)
         const path = './3/download/';
-        const filename = await downloadFile(link, path, documentName);
+        await downloadFile(link, path, documentName);
+        filename = path+documentName;
         const dir = await makeDirs(filename)
-       
         await extractArchieve(filename,dir)
-
         const resultDir = dir+ '_result'
         const txtFiles = await  getTxtfiles(dir)
         //const result = await checkTxtCookies(txtFiles)
@@ -60,15 +58,24 @@ bot.hears('id', (ctx) =>{
 bot.command('start', async (ctx) =>ctx.reply('Привет'));
 
 const downloadFile = async (url, path = "./3/download/",filename) => {
-    const dirnames = await fs.readdirSync('./3/download',)
-    while(dirnames.includes(filename)){
-        filename = '(1)'+ filename
-    }
-    const fileStream = fs.createWriteStream(path + filename);
-    await https.get(url, async function(response) {
- await response.pipe(fileStream);
-});
-  };
+
+  const dirnames = await fs.readdirSync('./3/download',)
+  while(dirnames.includes(filename)){   
+      filename = '(1)'+ filename
+  }
+  const fileStream = await fs.createWriteStream(path + filename);
+
+  const promise = new Promise(async function(resolve, reject){
+      await https.get(url, async function(response) {
+          await response.pipe(fileStream).on('finish',function(){
+              resolve();
+          });
+         })
+      })
+    await promise.then(function(results){
+      console.log('done')
+    })
+}
 
   const deleteFiles = async(dir,filename) =>{
     await fs.rmdirSync(dir, { recursive: true });

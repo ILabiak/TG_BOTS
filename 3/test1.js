@@ -13,7 +13,7 @@ let filename = './3/download/Insta.zip'
 const downloadFile = async (url, path = "./3/download/",filename) => {
 
     const dirnames = await fs.readdirSync('./3/download',)
-    while(dirnames.includes(filename)){                           // FIXXXXXXX
+    while(dirnames.includes(filename)){   
         filename = '(1)'+ filename
     }
     const fileStream = await fs.createWriteStream(path + filename);
@@ -28,7 +28,6 @@ const downloadFile = async (url, path = "./3/download/",filename) => {
       await promise.then(function(results){
         console.log('done')
       })
-
 }
 
 (async() =>{
