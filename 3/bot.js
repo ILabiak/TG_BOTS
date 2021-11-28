@@ -145,7 +145,7 @@ delete filesArr[index]
     filesArr = filesArr.filter(n => n)
     if(filesArr[0]){
         for await(let el of filesArr){
-            await txtFilesArr.push(getTxtfiles(dir+'/'+el))
+            await txtFilesArr.push(await getTxtfiles(dir+'/'+el))
         }
     }
     return txtFilesArr.flat();
