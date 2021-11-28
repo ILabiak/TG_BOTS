@@ -30,7 +30,9 @@ bot.on("document", async (ctx) => {
         let messageId = ctx.update.message.message_id;
         let fileId = ctx.update.message.document.file_id;
         let link = await ctx.telegram.getFileLink(fileId);
-        const filename = await downloadFile(link, `./3/download/`,documentName);
+        console.log(link)
+        const path = './3/download/';
+        const filename = await downloadFile(link, path, documentName);
         const dir = await makeDirs(filename)
        
         await extractArchieve(filename,dir)
@@ -66,7 +68,6 @@ const downloadFile = async (url, path = "./3/download/",filename) => {
     await https.get(url, async function(response) {
  await response.pipe(fileStream);
 });
-return path + filename;
   };
 
   const deleteFiles = async(dir,filename) =>{
@@ -97,7 +98,6 @@ const extractArchieve = async(filename,newDir) =>{
     await promise.then(function(results){
       console.log('done')
     })
-
 } 
 
 const makeArchieve = async(dir) =>{
