@@ -31,18 +31,17 @@ bot.on("document", async (ctx) => {
         let fileId = ctx.update.message.document.file_id;
         let link = await ctx.telegram.getFileLink(fileId);
         const path = './3/download/';
-        await downloadFile(link, path, documentName);
-        const filename = path+documentName;
+        const filename = await downloadFile(link, path, documentName);
         const dir = await makeDirs(filename)
         await extractArchieve(filename,dir)
         const resultDir = dir+ '_result'
         const txtFiles = await  getTxtfiles(dir)
-        //const result = await checkTxtCookies(txtFiles)
-      //  const archiveName = await makeArchieve(resultDir)
+        const result = await checkTxtCookies(txtFiles)
+        const archiveName = await makeArchieve(resultDir)
         console.dir({filename,dir,resultDir,txtFiles})
-      //  await bot.telegram.sendDocument('1351452476',{source :archiveName})
-        //bot.telegram.sendMessage('1351452476',result) 
-        //await deleteFiles(dir,archiveName)
+        await bot.telegram.sendDocument('1351452476',{source :archiveName})
+        bot.telegram.sendMessage('1351452476',result) 
+        await deleteFiles(dir,archiveName)
         
 
     }else{
@@ -75,6 +74,7 @@ const downloadFile = async (url, path = "./3/download/",filename) => {
     await promise.then(function(results){
       console.log('done')
     })
+    return path + filename;
 }
 
   const deleteFiles = async(dir,filename) =>{

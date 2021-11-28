@@ -28,10 +28,11 @@ const downloadFile = async (url, path = "./3/download/",filename) => {
       await promise.then(function(results){
         console.log('done')
       })
+      return path + filename;
 }
 
 (async() =>{
 console.log('1')
-await downloadFile('https://api.telegram.org/file/bot2119954532:AAFaEi3TgMriIT5-Ui97pu4tkFDBhd8fWmA/documents/file_0.zip','./3/download/','1.zip')
+console.log(await downloadFile('https://api.telegram.org/file/bot2119954532:AAFaEi3TgMriIT5-Ui97pu4tkFDBhd8fWmA/documents/file_0.zip','./3/download/','1.zip'))
 console.log('2')
 })()
