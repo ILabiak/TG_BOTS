@@ -32,7 +32,7 @@ bot.on("document", async (ctx) => {
         let link = await ctx.telegram.getFileLink(fileId);
         const path = './3/download/';
         await downloadFile(link, path, documentName);
-        filename = path+documentName;
+        const filename = path+documentName;
         const dir = await makeDirs(filename)
         await extractArchieve(filename,dir)
         const resultDir = dir+ '_result'
