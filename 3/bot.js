@@ -49,9 +49,6 @@ bot.on("document", async (ctx) => {
     }else{
         ctx.reply('неудача')
     } 
-
-
-    console.dir({documentId,sender})
   });
   
 
