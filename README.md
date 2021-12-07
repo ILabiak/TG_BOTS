@@ -8,3 +8,10 @@ The first bot includes some features to work with cryptocurrencies
 
 # BOT 2
 The second bot is made to check whether Instagram account creditals are valid to automize some work in the future
+
+# BOT 3
+The third bot is made to practice asynchronous programming. It includes many functions, which use async/await or promises.
+The purpose of the bot is to check accounts and give some info about them
+
+# BOT 4
+This bot is still in progress. It includes work with database, different apis, and different scenes on Telegram.
