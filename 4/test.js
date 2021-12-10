@@ -1,8 +1,7 @@
 'use strict'
 
 
-let str = 'ID86: Instagram Подписчики [Быстрые] - 60.00 руб.'
+let link = 'instagram.com/123'
+let linkRegex = new RegExp(/^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/)
 
-let index= str.indexOf(':')
-
-console.log(str.slice(2,index))
+console.dir(regex.test(link))
