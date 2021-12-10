@@ -1,5 +1,5 @@
 //import axios from "axios";
-const axios = require('axios');
+const axios = require("axios");
 
 module.exports = class QiwiBot {
   constructor(props) {
@@ -10,7 +10,7 @@ module.exports = class QiwiBot {
     method = "POST",
     url,
     data = {},
-    params = {}
+    params = {},
   }) => {
     let { accessToken } = this.props;
 
@@ -19,10 +19,10 @@ module.exports = class QiwiBot {
         method,
         url: `https://edge.qiwi.com${url}`,
         headers: {
-          Authorization: "Bearer " + accessToken
+          Authorization: "Bearer " + accessToken,
         },
         data,
-        params
+        params,
       });
 
       return response;
@@ -31,7 +31,7 @@ module.exports = class QiwiBot {
         return {
           status: error.response.status,
           statusText: error.response.statusText,
-          data: error.response.data
+          data: error.response.data,
         };
       } else if (error.request) {
         return error.request;
@@ -41,26 +41,26 @@ module.exports = class QiwiBot {
     }
   };
 
-  searchCheckout = async params => {
+  searchCheckout = async (params) => {
     return await this.sendAuthenticatedRequest({
       method: "GET",
       url: `/checkout/api/bill/search`,
-      params: params
+      params: params,
     });
   };
 
-  processCheckout = async data => {
+  processCheckout = async (data) => {
     return await this.sendAuthenticatedRequest({
       method: "POST",
       url: `/checkout-api/invoice/pay/wallet`,
-      data
+      data,
     });
   };
 
-  transactionInfo = async transactionId => {
+  transactionInfo = async (transactionId) => {
     return await this.sendAuthenticatedRequest({
       method: "GET",
-      url: `/payment-history/v2/transactions/${transactionId}`
+      url: `/payment-history/v2/transactions/${transactionId}`,
     });
   };
 
@@ -68,14 +68,14 @@ module.exports = class QiwiBot {
     let { personId } = this.props;
     return await this.sendAuthenticatedRequest({
       method: "GET",
-      url: `/payment-history/v2/persons/${personId}/payments?rows=25`
+      url: `/payment-history/v2/persons/${personId}/payments?rows=25`,
     });
   };
 
   accountInfo = async () => {
     return await this.sendAuthenticatedRequest({
       method: "GET",
-      url: "/person-profile/v1/profile/current"
+      url: "/person-profile/v1/profile/current",
     });
   };
 
@@ -84,14 +84,14 @@ module.exports = class QiwiBot {
 
     return await this.sendAuthenticatedRequest({
       method: "GET",
-      url: `/funding-sources/v2/persons/${personId}/accounts`
+      url: `/funding-sources/v2/persons/${personId}/accounts`,
     });
   };
 
   processPayment = async ({ pattern_id, data }) => {
     let response = await this.sendAuthenticatedRequest({
       url: `/sinap/api/v2/terms/${pattern_id}/payments`,
-      data
+      data,
     });
 
     let isPay = false;
@@ -113,14 +113,14 @@ module.exports = class QiwiBot {
     return response;
   };
 
-  receivePayment = async(paymentComment, sum) =>{
-  let txsList = await this.transactionsList();
-  let txArr = txsList.data
-   for(let el of txArr){
-      if(el.sum.amount == sum && el.comment.includes(paymentComment)){
-          return 1;
+  receivePayment = async (paymentComment, sum) => {
+    let txsList = await this.transactionsList();
+    let txArr = txsList.data;
+    for (let el of txArr) {
+      if (el.sum.amount == sum && el.comment.includes(paymentComment)) {
+        return 1;
       }
-  }
-  return 0; 
-  }
-}
+    }
+    return 0;
+  };
+};
