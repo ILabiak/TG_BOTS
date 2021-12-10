@@ -40,13 +40,13 @@ const getSessionIds = async (path = "cookies/1.txt") => {
   let sessionIds = [];
   for (let el of textArr) {
     if (el.includes(".instagram.com") && el.includes("sessionid")) {
-      console.dir(el)
+      console.dir(el);
       let start = el.lastIndexOf("\t") + 1;
       let end = el.lastIndexOf("\r");
       let sessionId;
-      if(end < start){
+      if (end < start) {
         sessionId = el.slice(start);
-      }else{
+      } else {
         sessionId = el.slice(start, end);
       }
       sessionIds.push(sessionId);
@@ -98,8 +98,8 @@ const checkForValid = async (sessionIdCookie) => {
                 let endStr = text.indexOf("- See Instagram photos");
                 let accountInfo = text.slice(startStr, endStr);
                 return `${usernameOutput}\n${accountInfo}`;
-              }else{
-                return 'Couldn\'t find account data';
+              } else {
+                return "Couldn't find account data";
               }
             });
           return secondRequest;
@@ -114,8 +114,8 @@ const checkForValid = async (sessionIdCookie) => {
   }
 };
 
-bot.on('sticker', async (ctx) =>{
+bot.on("sticker", async (ctx) => {
   //console.log(ctx.update.message.message_id);
   let messageId = ctx.update.message.message_id;
-  ctx.reply('response', Extra.inReplyTo(messageId))
-})
+  ctx.reply("response", Extra.inReplyTo(messageId));
+});
