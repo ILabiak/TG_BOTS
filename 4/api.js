@@ -97,7 +97,7 @@ for(let obj of arr){
 `
        }
     }
-    return {text, min,max};
+    return {text, min,max,serviceId};
     }
     (async() => {
 

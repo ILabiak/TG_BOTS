@@ -123,14 +123,29 @@ servicesScene.on('message', async (ctx) => {
     const serviceId = str.slice(2,index);
     const services = await api.getServices();
     let serviceDetails = await api.getServiceDetails(services, serviceId)
-   await ctx.reply(serviceDetails.text, Markup.keyboard(['Меню']).resize().extra())
+   await ctx.reply(serviceDetails.text)
+   ctx.scene.enter('makeOrder', {service : serviceId, category: ctx.session.__scenes.state.category})
   }
-  
 })
-servicesScene.leave((ctx) => ctx.reply('Выберите действие',Markup
-  .keyboard(['Моя информация', 'Заказать накрутку', 'Мои заказы', 'Пополнить💲', 'Услуги'])
-  .resize()
-  .extra()))
 
 
-module.exports = {paymentAmountScene, paymentMethodScene, qiwiPaymentScene, categoryScene, servicesScene, startQiwi}
+  const makeOrderScene = new Scene('makeOrder')
+  makeOrderScene.enter(async(ctx) =>{
+   // const category = ctx.session.__scenes.state.category
+   // const serviceId = ctx.session.__scenes.state.service
+    ctx.reply(`Выберите действие:`,
+    Markup.keyboard(['Заказать', 'Меню ', 'Выбрать другую услугу', 'Выбрать другую категорию'])
+    .resize()
+    .extra())
+})
+  makeOrderScene.hears('Заказать', (ctx) =>{})
+  makeOrderScene.hears('Меню', leave('makeOrder'))
+  makeOrderScene.hears('Выбрать другую услугу', (ctx) =>ctx.scene.enter('services', {category : ctx.session.__scenes.state.category}))
+  makeOrderScene.hears('Выбрать другую категорию', (ctx) => ctx.scene.enter('category'))
+  makeOrderScene.on('message',leave('makeOrder') )
+  makeOrderScene.leave((ctx) => ctx.reply('f', Markup
+    .keyboard(['Моя информация', 'Заказать накрутку', 'Мои заказы', 'Пополнить💲', 'Услуги'])
+    .resize()
+    .extra()))  
+
+module.exports = {paymentAmountScene, paymentMethodScene, qiwiPaymentScene, categoryScene, servicesScene, makeOrderScene, startQiwi}

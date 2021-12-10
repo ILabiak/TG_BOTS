@@ -8,16 +8,23 @@ const Scene = require('telegraf/scenes/base')
 const Extra = require('telegraf/extra')
 const Markup = require('telegraf/markup')
 const { enter, leave } = Stage
-
-
+ 
 const api = require('./api');
 const db = require('./db')
 const scenes = require('./scenes');
 const bot = new Telegraf(config.bot_token);
 
-const stage = new Stage([scenes.paymentAmountScene, scenes.paymentMethodScene,scenes.qiwiPaymentScene, scenes.categoryScene, scenes.servicesScene], { ttl: 1800 })
+const stage = new Stage([
+  scenes.paymentAmountScene,
+  scenes.paymentMethodScene,
+  scenes.qiwiPaymentScene,
+  scenes.categoryScene,
+  scenes.servicesScene,
+  scenes.makeOrderScene
+], { ttl: 1800 })
 bot.use(session())
 bot.use(stage.middleware())
+//bot.hears('Заказать накрутку', (ctx) => ctx.scene.enter('newOrder'))
 bot.hears('Пополнить💲', (ctx) => ctx.scene.enter('paymentAmount', {amount : 100}))
 bot.hears('Услуги', (ctx) => ctx.scene.enter('category'))
 bot.hears('Моя информация', async (ctx) => {
