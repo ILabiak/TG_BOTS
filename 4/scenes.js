@@ -7,7 +7,6 @@ const QiwiApi = require("./qiwi");
 const api = require("./api");
 const db = require("./db");
 const config = require("./config/config.json");
-const { COPYFILE_EXCL } = require("constants");
 
 let qiwi;
 
@@ -256,6 +255,12 @@ makeOrderLinkScene.leave((ctx) =>
       .extra()
   )
 );
+
+/*
+TO DO: 
+1. Make OrderAmount scene
+2. Make scene to approve order and make it.
+ */
 
 module.exports = {
   paymentAmountScene,
