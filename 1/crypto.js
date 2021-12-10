@@ -1,9 +1,9 @@
-'use strict';
-const { Telegraf } = require('telegraf')
-const { Context } = require('telegraf');
-const promised = require('./promised.js');
-const green = '\x1b[32m';
-const red = '\x1b[31m';
+"use strict";
+const { Telegraf } = require("telegraf");
+const { Context } = require("telegraf");
+const promised = require("./promised.js");
+const green = "\x1b[32m";
+const red = "\x1b[31m";
 
 const errorHandlerWrapped = promised.errorWrapper(promised.handler);
 
@@ -14,13 +14,13 @@ class RawCrypto {
   //#apiKey;
 
   constructor(/*key*/) {
-    this.defaultUrl = 'https://min-api.cryptocompare.com/data';
+    this.defaultUrl = "https://min-api.cryptocompare.com/data";
     //this.#apiKey = (key) ? key : null;
   }
 
   async currencyToCrypto(currency) {
     if (!currency) {
-      currency = await promised.question('Type currency you want to convert\n');
+      currency = await promised.question("Type currency you want to convert\n");
     }
     const query = this.defaultUrl + `/price?fsym=BTC&tsyms=${currency}`;
     const result = await safeGet(query);
@@ -30,54 +30,53 @@ class RawCrypto {
       for (const key of keys) {
         resultText.push(`${key}: ${result[key]}`);
       }
-    //  ctx.reply(`${resultText.join('\n')}\n`);
+      //  ctx.reply(`${resultText.join('\n')}\n`);
     }
-    return resultText.join('\n');
+    return resultText.join("\n");
   }
 
-  async currencyexchanger(amount, from, to){
-
+  async currencyexchanger(amount, from, to) {
     const link = this.defaultUrl + `/price?fsym=${from}&tsyms=${to}`;
     const request = await safeGet(link);
-    const rate = request[Object.keys(request)[0]]
+    const rate = request[Object.keys(request)[0]];
     const result = (rate * amount).toFixed(2);
     const resultText = `${amount} ${from.toUpperCase()} = ${result} ${to.toUpperCase()}`;
     //console.log(resultText)
-    return [result,resultText];
-    }
+    return [result, resultText];
+  }
 
   async topFiveCurrencies() {
-    const query = this.defaultUrl + '/top/totalvolfull?limit=10&tsym=USD';
+    const query = this.defaultUrl + "/top/totalvolfull?limit=10&tsym=USD";
     const currencies = (await safeGet(query)).Data;
     currencies.splice(4, 5);
     const resultText = [];
-    const result = currencies.map(item => item.CoinInfo.FullName);
+    const result = currencies.map((item) => item.CoinInfo.FullName);
     result.forEach((el, index) => {
       resultText.push(`${index + 1}. ${el}`);
     });
-   // ctx.reply(`${resultText.join('\n')}\n`);
-    return resultText.join('\n');
+    // ctx.reply(`${resultText.join('\n')}\n`);
+    return resultText.join("\n");
   }
- 
-  async cryptoPrices(...args){
+
+  async cryptoPrices(...args) {
     let resultText = [];
 
-   for(let el of args){
-    let query = `https://min-api.cryptocompare.com/data/price?fsym=${el}&tsyms=USD`
-    let priceData = await safeGet(query)
-    resultText.push(`${el.toUpperCase()} price is: ${priceData.USD} USD`)
-    resultText.push(await this.currencyPriceVolume(`${el}, usd`),'\n')
-   }
-   //console.log(resultText.join('\n'))
-return resultText.join('\n');
+    for (let el of args) {
+      let query = `https://min-api.cryptocompare.com/data/price?fsym=${el}&tsyms=USD`;
+      let priceData = await safeGet(query);
+      resultText.push(`${el.toUpperCase()} price is: ${priceData.USD} USD`);
+      resultText.push(await this.currencyPriceVolume(`${el}, usd`), "\n");
+    }
+    //console.log(resultText.join('\n'))
+    return resultText.join("\n");
   }
 
   async currencyPriceVolume(input) {
     if (!input) {
-      const text = 'Type curr you want to get 24h volume of/res curr\n';
+      const text = "Type curr you want to get 24h volume of/res curr\n";
       input = await promised.question(text);
     }
-    const [curr, volumeCurr] = input.split(', ');
+    const [curr, volumeCurr] = input.split(", ");
     const url = `/v2/histoday?fsym=${curr}&tsym=${volumeCurr}&limit=1`;
     const query = this.defaultUrl + url;
     const result = await safeGet(query);
@@ -90,22 +89,22 @@ return resultText.join('\n');
     let diff = `${priceDiff} ${volumeCurr.toUpperCase()}`;
     if (result) {
       const lowText = `The lowest price for 24 hours is: ${lowest}`;
-      const lowestText = lowText ;
+      const lowestText = lowText;
       const highestText = `The highest price for 24 hours is: ${highest}`;
-      diff = priceDiff > 0 ? '+' + diff : diff;
+      diff = priceDiff > 0 ? "+" + diff : diff;
       const diffText = `24 hour price differance: ${diff}`;
       resultText.push(lowestText, highestText, diffText);
 
-   //   console.log(`${resultText.join('\n')}\n`);
+      //   console.log(`${resultText.join('\n')}\n`);
     }
-    return resultText.join('\n');
+    return resultText.join("\n");
   }
 
   async cryptoNews() {
     const info = await safeGet(`${this.defaultUrl}/v2/news/?lang=EN`);
     const data = info.Data;
 
-    let proposedTitles = '\nFive most recent articles on cryptocurrency:\n';
+    let proposedTitles = "\nFive most recent articles on cryptocurrency:\n";
     for (let i = 0; i < 5; i++) {
       const fixedTitle = promised.decodeString(data[i].title);
       proposedTitles += `${i + 1}. ${fixedTitle}\n`;
@@ -114,70 +113,69 @@ return resultText.join('\n');
     while (bool) {
       console.log(proposedTitles);
       const writtenTitleNumber = await promised.question(
-        'Enter number of article\'s title you\'d like to read:\n'
+        "Enter number of article's title you'd like to read:\n"
       );
       const fixedBody = promised.decodeString(
         data[writtenTitleNumber - 1].body
       );
-      console.log('\n' + fixedBody);
+      console.log("\n" + fixedBody);
       const option = await promised.question(
-        '\nWould you like to read any other article from previous list?\ny/n?\n'
+        "\nWould you like to read any other article from previous list?\ny/n?\n"
       );
-      if (option !== 'y') bool = false;
+      if (option !== "y") bool = false;
     }
   }
 
   async transactionInfo() {
     const cryptoNames = {
-      1: 'Bitcoin',
-      2: 'Dash',
-      3: 'Dogecoin',
-      4: 'Litecoin',
+      1: "Bitcoin",
+      2: "Dash",
+      3: "Dogecoin",
+      4: "Litecoin",
     };
     const abbreviation = {
-      1: 'btc',
-      2: 'dash',
-      3: 'doge',
-      4: 'ltc',
+      1: "btc",
+      2: "dash",
+      3: "doge",
+      4: "ltc",
     };
 
-    console.log('\nList of cryptos:');
+    console.log("\nList of cryptos:");
     for (const key in cryptoNames) {
       console.log(`${key}. ${cryptoNames[key]}`);
     }
 
-    const chosenCrypto = await promised.question('\nEnter the number' +
-      ' of crypto from the list above you\'d to like to input hash of: \n');
-    const hash = await promised.question('\nEnter the hash of ' +
-      'transaction you\'d like to get info about: \n');
+    const chosenCrypto = await promised.question(
+      "\nEnter the number" +
+        " of crypto from the list above you'd to like to input hash of: \n"
+    );
+    const hash = await promised.question(
+      "\nEnter the hash of " + "transaction you'd like to get info about: \n"
+    );
 
     if (hash.length !== 64) {
       console.log(`${red}Wrong hash${green}`);
       return;
     }
 
-    const info = await safeGet(`https://api.blockcypher.com/v1/${abbreviation[chosenCrypto]}/main/txs/${hash}`);
-    const keys = [
-      'total',
-      'fees',
-      'size',
-      'preference',
-      'received',
-    ];
+    const info = await safeGet(
+      `https://api.blockcypher.com/v1/${abbreviation[chosenCrypto]}/main/txs/${hash}`
+    );
+    const keys = ["total", "fees", "size", "preference", "received"];
     const outputKeys = [
-      '\nSatoshis sent',
-      'Fee in satoshis',
-      'Transaction size in bytes',
-      'Transaction preference',
-      'Received at',
+      "\nSatoshis sent",
+      "Fee in satoshis",
+      "Transaction size in bytes",
+      "Transaction preference",
+      "Received at",
     ];
-    if (Object.prototype.hasOwnProperty.call(info, 'error')) {
+    if (Object.prototype.hasOwnProperty.call(info, "error")) {
       console.log(`${red}Wrong hash${green}`);
       return;
-    } else if (Object.prototype.hasOwnProperty.call(info, 'confirmed')) {
-      keys.push('confirmed');
-      outputKeys.push('Confirmed at');
-    } else console.log('\nTransaction isn\'t confirmed yet :C');
+    } else if (Object.prototype.hasOwnProperty.call(info, "confirmed")) {
+      keys.push("confirmed");
+      outputKeys.push("Confirmed at");
+    } else console.log("\nTransaction isn't confirmed yet :C");
 
     for (let i = 0; i < keys.length; i++) {
       console.log(`${outputKeys[i]}: ${info[keys[i]]}`);
@@ -192,14 +190,11 @@ return resultText.join('\n');
 
 const Crypto = promised.classWrapper(RawCrypto, promised.classHandler);
 
-const temp = new Crypto;
+const temp = new Crypto();
 
- (async () => {
-
+(async () => {
   //console.dir(await temp.currencyexchanger(0.1,'btc','usd'));
-
-})(); 
-
+})();
 
 module.exports = {
   Crypto,

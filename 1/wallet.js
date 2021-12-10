@@ -1,8 +1,8 @@
-'use strict';
+"use strict";
 
-const promised = require('./promised.js');
-const { Crypto } = require('./crypto.js');
-const crypto = new Crypto;
+const promised = require("./promised.js");
+const { Crypto } = require("./crypto.js");
+const crypto = new Crypto();
 
 const errorHandlerWrapped = promised.errorWrapper(promised.handler);
 
@@ -15,7 +15,7 @@ class Wallet {
   _keys;
 
   constructor(currency, token) {
-    this.defaultUrl = 'api.blockcypher.com';
+    this.defaultUrl = "api.blockcypher.com";
     this.defaultPath = `/v1/${currency}/main/`;
     this._token = token;
   }
@@ -26,7 +26,7 @@ class Wallet {
       token: this._token,
     });
     const options = {
-      method: 'POST',
+      method: "POST",
       hostname: this.defaultUrl,
       path,
       headers: {},
@@ -37,18 +37,30 @@ class Wallet {
   }
   async getAdrsBalance(adrs) {
     const path = `/v1/btc/main/addrs/${adrs}/balance`;
-    const link = 'https://' + this.defaultUrl + path;
+    const link = "https://" + this.defaultUrl + path;
     const result = [];
     const getInfo = await safeGet(link);
-    const received = await (crypto.currencyexchanger((getInfo.total_received / 100000000),'btc','usd'));
-    const sent = await (crypto.currencyexchanger((getInfo.total_sent / 100000000),'btc','usd'));
-    const balance = await (crypto.currencyexchanger((getInfo.balance / 100000000),'btc','usd'));
+    const received = await crypto.currencyexchanger(
+      getInfo.total_received / 100000000,
+      "btc",
+      "usd"
+    );
+    const sent = await crypto.currencyexchanger(
+      getInfo.total_sent / 100000000,
+      "btc",
+      "usd"
+    );
+    const balance = await crypto.currencyexchanger(
+      getInfo.balance / 100000000,
+      "btc",
+      "usd"
+    );
     result.push(`Total received: ${received[0]} USD`);
     result.push(`Total send: ${sent[0]} USD`);
     result.push(`Balance: ${balance[0]} USD`);
-    result.push(`Details: https://www.blockchain.com/btc/address/${adrs}`)
+    result.push(`Details: https://www.blockchain.com/btc/address/${adrs}`);
     //console.log(`${result.join('\n')}\n`);
-    return result.join('\n');
+    return result.join("\n");
   }
   get keys() {
     if (!this._keys) return null;

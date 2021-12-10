@@ -1,14 +1,14 @@
-'use strict';
+"use strict";
 
-const { Crypto } = require('./src/crypto.js');
-const { question } = require('./src/promised.js');
-const exchanges = require('./src/exchanges.js');
+const { Crypto } = require("./src/crypto.js");
+const { question } = require("./src/promised.js");
+const exchanges = require("./src/exchanges.js");
 
 const crypto = new Crypto();
 
 async function menu() {
   console.log(
-    '\x1b[32m',
+    "\x1b[32m",
     `Menu:
   1 - Currency to BTC exchange rate
   2 - Top five crypto by volume
@@ -22,8 +22,9 @@ async function menu() {
   10 - Cryptocurrency fee rates
   11 - Show currency code by its number and vice versa
   12 - Transaction info by its hash
-  Type anything to exit.`);
-  const selection = parseInt(await question('Select action\n')) - 1;
+  Type anything to exit.`
+  );
+  const selection = parseInt(await question("Select action\n")) - 1;
   let features = [
     crypto.currencyToCrypto,
     crypto.topFiveCurrencies,
@@ -38,7 +39,7 @@ async function menu() {
     exchanges.currencyCodeNumber,
     crypto.transactionInfo,
   ];
-  features = features.map(item => item.bind(crypto));
+  features = features.map((item) => item.bind(crypto));
   if (features[selection]) await features[selection]();
   else process.exit();
 }
@@ -46,7 +47,7 @@ async function menu() {
 (async () => {
   while (true) {
     await menu();
-    const answ = await question('Clear menu(y/n)?\n');
-    if (answ === 'y') console.clear();
+    const answ = await question("Clear menu(y/n)?\n");
+    if (answ === "y") console.clear();
   }
 })();
