@@ -7,6 +7,7 @@ const QiwiApi = require("./qiwi");
 const api = require("./api");
 const db = require("./db");
 const config = require("./config/config.json");
+const { doDuring } = require("async");
 
 let qiwi;
 
@@ -256,6 +257,46 @@ makeOrderLinkScene.leave((ctx) =>
   )
 );
 
+const makeOrderAmountScene = new Scene("orderAmount");
+makeOrderAmountScene.enter((ctx) => {
+  const min = ctx.session.__scenes.state.min;
+  const max = ctx.session.__scenes.state.max;
+  ctx.reply(`Укажите количество, которое вы хотите накрутить
+От ${min} до ${max}.`);
+});
+makeOrderAmountScene.on("message", (ctx) => {
+  const amount = parseInt(ctx.message.text)
+  if (amount >= ctx.session.__scenes.state.min && amount <= ctx.session.__scenes.state.max) {
+    ctx.scene.enter("submitOrder", {
+      serviceId: ctx.session.__scenes.state.serviceId,
+      min: ctx.session.__scenes.state.min,
+      max: ctx.session.__scenes.state.max,
+      link: link,
+      amount: amount,
+    });
+  } else {
+    ctx.reply(
+      "Неправильное количество, попробуйте ввести снова, либо нажмите кнопку Отменить",
+      Markup.keyboard(["Отменить"]).resize().extra()
+    );
+  }
+});
+makeOrderAmountScene.hears("Отменить", leave("orderLink"));
+makeOrderAmountScene.leave((ctx) =>
+  ctx.reply(
+    "Выберите действие:",
+    Markup.keyboard([
+      "Моя информация",
+      "Заказать накрутку",
+      "Мои заказы",
+      "Пополнить💲",
+      "Услуги",
+    ])
+      .resize()
+      .extra()
+  )
+);
+
 /*
 TO DO: 
 1. Make OrderAmount scene
@@ -270,5 +311,6 @@ module.exports = {
   servicesScene,
   makeOrderScene,
   makeOrderLinkScene,
+  makeOrderAmountScene,
   startQiwi,
 };
