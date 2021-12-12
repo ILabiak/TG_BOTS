@@ -100,7 +100,7 @@ function getCategoryServices(arr, category) {
 
 async function getServiceDetails(arr, serviceId) {
   let text;
-  let min, max;
+  let min, max, price;
   for (let obj of arr) {
     let str = obj.name;
     let index = str.indexOf(":");
@@ -108,6 +108,7 @@ async function getServiceDetails(arr, serviceId) {
     if (id == serviceId) {
       min = obj.min;
       max = obj.max;
+      price = obj.rate;
       text = `
 Цена: ${obj.rate} руб.
 Минимальный заказ: ${obj.min}
@@ -115,7 +116,7 @@ async function getServiceDetails(arr, serviceId) {
 `;
     }
   }
-  return { text, min, max, serviceId };
+  return { text, min, max, serviceId, price };
 }
 (async () => {
   // console.log(await getServices())

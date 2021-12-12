@@ -23,12 +23,14 @@ const stage = new Stage(
     scenes.servicesScene,
     scenes.makeOrderScene,
     scenes.makeOrderLinkScene,
+    scenes.makeOrderAmountScene,
+    scenes.submitOrderScene,
   ],
   { ttl: 1800 }
 );
 bot.use(session());
 bot.use(stage.middleware());
-//bot.hears('Заказать накрутку', (ctx) => ctx.scene.enter('newOrder'))
+//bot.hears('Заказать накрутку', (ctx) => ctx.scene.enter('makeOrder'))
 bot.hears("Пополнить💲", (ctx) =>
   ctx.scene.enter("paymentAmount", { amount: 100 })
 );
