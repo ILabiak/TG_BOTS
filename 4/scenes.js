@@ -11,7 +11,6 @@ const { doDuring } = require("async");
 
 let qiwi;
 
-
 const startQiwi = async () => {
   qiwi = new QiwiApi({
     accessToken: config.qiwi_token, // Токен кошелька https://qiwi.com/api
@@ -20,8 +19,7 @@ const startQiwi = async () => {
   return 1;
 };
 
-
-const showMenu = (context) =>{
+const showMenu = (context) => {
   context.reply(
     "Вы были перемещены в меню:",
     Markup.keyboard([
@@ -32,9 +30,9 @@ const showMenu = (context) =>{
       "Услуги",
     ])
       .resize()
-      .extra())
-}
-
+      .extra()
+  );
+};
 
 const paymentAmountScene = new Scene("paymentAmount");
 paymentAmountScene.enter(async (ctx) => {
@@ -70,7 +68,6 @@ paymentAmountScene.leave((ctx) =>
   )
 );
 
-
 const paymentMethodScene = new Scene("paymentMethod");
 paymentMethodScene.enter(({ reply }) =>
   reply(
@@ -99,7 +96,6 @@ paymentMethodScene.leave((ctx) =>
       .extra()
   )
 );
-
 
 const qiwiPaymentScene = new Scene("qiwiPayment");
 qiwiPaymentScene.enter(async (ctx) => {
@@ -145,7 +141,6 @@ qiwiPaymentScene.leave((ctx) =>
   )
 );
 
-
 const categoryScene = new Scene("category");
 categoryScene.enter(async ({ reply }) => {
   const services = await api.getServices();
@@ -188,11 +183,10 @@ servicesScene.on("message", async (ctx) => {
       category: ctx.session.__scenes.state.category,
       min: serviceDetails.min,
       max: serviceDetails.max,
-      price : serviceDetails.price
+      price: serviceDetails.price,
     });
   }
 });
-
 
 const makeOrderScene = new Scene("makeOrder");
 makeOrderScene.enter(async (ctx) => {
@@ -213,12 +207,12 @@ makeOrderScene.hears("Заказать", (ctx) =>
     serviceId: ctx.session.__scenes.state.serviceId,
     min: ctx.session.__scenes.state.min,
     max: ctx.session.__scenes.state.max,
-    price : ctx.session.__scenes.state.price
+    price: ctx.session.__scenes.state.price,
   })
 );
 makeOrderScene.hears("Меню", (ctx) => {
   showMenu(ctx);
-  ctx.scene.leave("makeOrder")
+  ctx.scene.leave("makeOrder");
 });
 makeOrderScene.hears("Выбрать другую услугу", (ctx) =>
   ctx.scene.enter("services", { category: ctx.session.__scenes.state.category })
@@ -228,21 +222,18 @@ makeOrderScene.hears("Выбрать другую категорию", (ctx) =>
 );
 makeOrderScene.on("message", leave("makeOrder"));
 
-
 const makeOrderLinkScene = new Scene("orderLink");
 makeOrderLinkScene.enter((ctx) => {
-  ctx.reply("Укажите ссылку, куда будет происходить накрутка",
-  Markup.keyboard([
-    "Отменить"
-  ])
-  .resize()
-  .extra())
+  ctx.reply(
+    "Укажите ссылку, куда будет происходить накрутка",
+    Markup.keyboard(["Отменить"]).resize().extra()
+  );
 });
-makeOrderLinkScene.hears("Отменить",(ctx) => {
+makeOrderLinkScene.hears("Отменить", (ctx) => {
   showMenu(ctx);
-  ctx.scene.leave("orderLink")
-});  
- makeOrderLinkScene.on("message", (ctx) => {
+  ctx.scene.leave("orderLink");
+});
+makeOrderLinkScene.on("message", (ctx) => {
   let link;
   const message = ctx.update.message.text;
   const linkRegex = new RegExp(
@@ -254,7 +245,7 @@ makeOrderLinkScene.hears("Отменить",(ctx) => {
       serviceId: ctx.session.__scenes.state.serviceId,
       min: ctx.session.__scenes.state.min,
       max: ctx.session.__scenes.state.max,
-      price : ctx.session.__scenes.state.price,
+      price: ctx.session.__scenes.state.price,
       link: link,
     });
   } else {
@@ -263,8 +254,7 @@ makeOrderLinkScene.hears("Отменить",(ctx) => {
       Markup.keyboard(["Отменить"]).resize().extra()
     );
   }
-}); 
-
+});
 
 const makeOrderAmountScene = new Scene("orderAmount");
 makeOrderAmountScene.enter((ctx) => {
@@ -272,24 +262,22 @@ makeOrderAmountScene.enter((ctx) => {
   const max = ctx.session.__scenes.state.max;
   ctx.reply(`Укажите количество, которое вы хотите накрутить
 От ${min} до ${max}.`);
-},
-Markup.keyboard([
-  "Отменить"
-])
-.resize()
-.extra());
+}, Markup.keyboard(["Отменить"]).resize().extra());
 makeOrderAmountScene.hears("Отменить", (ctx) => {
   showMenu(ctx);
-  ctx.scene.leave("orderAmount")
+  ctx.scene.leave("orderAmount");
 });
 makeOrderAmountScene.on("message", (ctx) => {
-  const amount = parseInt(ctx.message.text)
-  if (amount >= ctx.session.__scenes.state.min && amount <= ctx.session.__scenes.state.max) {
+  const amount = parseInt(ctx.message.text);
+  if (
+    amount >= ctx.session.__scenes.state.min &&
+    amount <= ctx.session.__scenes.state.max
+  ) {
     ctx.scene.enter("submitOrder", {
       serviceId: ctx.session.__scenes.state.serviceId,
       min: ctx.session.__scenes.state.min,
       max: ctx.session.__scenes.state.max,
-      price : ctx.session.__scenes.state.price,
+      price: ctx.session.__scenes.state.price,
       link: ctx.session.__scenes.state.link,
       amount: amount,
     });
@@ -301,32 +289,33 @@ makeOrderAmountScene.on("message", (ctx) => {
   }
 });
 
-
 const submitOrderScene = new Scene("submitOrder");
 submitOrderScene.enter((ctx) => {
   const serviceId = ctx.session.__scenes.state.serviceId;
   const link = ctx.session.__scenes.state.link;
   const amount = ctx.session.__scenes.state.amount;
-  const price = ctx.session.__scenes.state.price
-  const totalcost = amount * price / 1000;
+  const price = ctx.session.__scenes.state.price;
+  const totalcost = (amount * price) / 1000;
   ctx.reply(`Информация о заказе:
 ID услуги: ${serviceId}
 Ссылка: ${link}
 Количество: ${amount}
 С Вашего баланса спишется ${totalcost} руб.`);
-ctx.reply("Выберите действие:", Markup.keyboard([
-  "Подтвердить заказ",
-  "Отменить заказ",
-  "Меню"
-])
-  .resize()
-  .extra())
+  ctx.reply(
+    "Выберите действие:",
+    Markup.keyboard(["Подтвердить заказ", "Отменить заказ", "Меню"])
+      .resize()
+      .extra()
+  );
 });
 submitOrderScene.on("message", leave("submitOrder"));
-submitOrderScene.hears("Отменить заказ", makeOrderAmountScene.hears("Отменить", (ctx) => {
-  showMenu(ctx);
-  ctx.scene.leave("submitOrder")
-}));
+submitOrderScene.hears(
+  "Отменить заказ",
+  makeOrderAmountScene.hears("Отменить", (ctx) => {
+    showMenu(ctx);
+    ctx.scene.leave("submitOrder");
+  })
+);
 submitOrderScene.hears("Меню", leave("submitOrder"));
 submitOrderScene.leave((ctx) =>
   ctx.reply(
@@ -343,7 +332,6 @@ submitOrderScene.leave((ctx) =>
   )
 );
 
-
 module.exports = {
   paymentAmountScene,
   paymentMethodScene,
@@ -355,4 +343,4 @@ module.exports = {
   makeOrderAmountScene,
   submitOrderScene,
   startQiwi,
-}
+};
