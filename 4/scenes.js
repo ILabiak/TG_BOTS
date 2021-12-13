@@ -310,27 +310,24 @@ ID услуги: ${serviceId}
 });
 submitOrderScene.on("message", leave("submitOrder"));
 submitOrderScene.hears(
-  "Отменить заказ",
-  makeOrderAmountScene.hears("Отменить", (ctx) => {
+  "Подтвердить заказ", (ctx) => {
     showMenu(ctx);
     ctx.scene.leave("submitOrder");
-  })
+  }
 );
-submitOrderScene.hears("Меню", leave("submitOrder"));
-submitOrderScene.leave((ctx) =>
-  ctx.reply(
-    "Выберите действие:",
-    Markup.keyboard([
-      "Моя информация",
-      "Заказать накрутку",
-      "Мои заказы",
-      "Пополнить💲",
-      "Услуги",
-    ])
-      .resize()
-      .extra()
-  )
+submitOrderScene.hears(
+  "Отменить заказ", (ctx) => {
+    showMenu(ctx);
+    ctx.scene.leave("submitOrder");
+  }
 );
+submitOrderScene.hears(
+  "Меню", (ctx) => {
+    showMenu(ctx);
+    ctx.scene.leave("submitOrder");
+  }
+);
+
 
 module.exports = {
   paymentAmountScene,
