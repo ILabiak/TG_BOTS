@@ -205,7 +205,7 @@ makeOrderScene.hears("Выбрать другую категорию", (ctx) =>
   ctx.scene.enter("category")
 );
 makeOrderScene.on("message", leave("makeOrder"));
-makeOrderScene.leave((ctx) =>
+/* makeOrderScene.leave((ctx) =>
   ctx.reply(
     "Выберите действие:",
     Markup.keyboard([
@@ -218,19 +218,28 @@ makeOrderScene.leave((ctx) =>
       .resize()
       .extra()
   )
-);
+); */
 
 const makeOrderLinkScene = new Scene("orderLink");
 makeOrderLinkScene.enter((ctx) => {
-  ctx.reply("Укажите ссылку, куда будет происходить накрутка");
+  ctx.reply("Укажите ссылку, куда будет происходить накрутка",
+  Markup.keyboard([
+    "Отменить"
+  ])
+  .resize()
+  .extra())
 });
-makeOrderLinkScene.on("message", (ctx) => {
-  const link = ctx.update.message.text;
+makeOrderLinkScene.hears("Отменить", leave("orderLink"));  // Не видит
+ makeOrderLinkScene.on("message", (ctx) => {
+  let link;
+  const message = ctx.update.message.text;
+  console.log(message)
   const linkRegex = new RegExp(
     /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/
   );
-  if (linkRegex.test(link)) {
-    ctx.scene.enter("orderAmount", {              // Error: Can't find scene: orderAmount
+  if (linkRegex.test(message)) {
+    link = message;
+    ctx.scene.enter("orderAmount", {             // Error: Can't find scene: orderAmount
       serviceId: ctx.session.__scenes.state.serviceId,
       min: ctx.session.__scenes.state.min,
       max: ctx.session.__scenes.state.max,
@@ -243,8 +252,7 @@ makeOrderLinkScene.on("message", (ctx) => {
       Markup.keyboard(["Отменить"]).resize().extra()
     );
   }
-});
-makeOrderLinkScene.hears("Отменить", leave("orderLink"));  // Не видит
+}); 
 makeOrderLinkScene.leave((ctx) =>
   ctx.reply(
     "Выберите действие:",
@@ -266,7 +274,12 @@ makeOrderAmountScene.enter((ctx) => {
   const max = ctx.session.__scenes.state.max;
   ctx.reply(`Укажите количество, которое вы хотите накрутить
 От ${min} до ${max}.`);
-});
+},
+Markup.keyboard([
+  "Отменить"
+])
+.resize()
+.extra());
 makeOrderAmountScene.on("message", (ctx) => {
   const amount = parseInt(ctx.message.text)
   if (amount >= ctx.session.__scenes.state.min && amount <= ctx.session.__scenes.state.max) {
@@ -275,7 +288,7 @@ makeOrderAmountScene.on("message", (ctx) => {
       min: ctx.session.__scenes.state.min,
       max: ctx.session.__scenes.state.max,
       price : ctx.session.__scenes.state.price,
-      link: link,
+      link: ctx.session.__scenes.state.link,
       amount: amount,
     });
   } else {
@@ -355,4 +368,4 @@ module.exports = {
   makeOrderAmountScene,
   submitOrderScene,
   startQiwi,
-};
+}
