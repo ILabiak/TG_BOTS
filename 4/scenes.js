@@ -308,11 +308,26 @@ ID услуги: ${serviceId}
       .extra()
   );
 });
-submitOrderScene.on("message", leave("submitOrder"));
 submitOrderScene.hears(
-  "Подтвердить заказ", (ctx) => {
-    showMenu(ctx);
-    ctx.scene.leave("submitOrder");
+  "Подтвердить заказ", async (ctx) => {
+    const telegramId = ctx.update.message.from.id;
+    const serviceId = ctx.session.__scenes.state.serviceId;
+    const link = ctx.session.__scenes.state.link;
+    const amount = ctx.session.__scenes.state.amount;
+    let orderRes = await api.makeOrder(serviceId,amount,link)
+    if(orderRes != false){
+ctx.reply(`Ваш заказ успешно создан
+ID заказа: ${orderRes}`)
+
+/*
+TO DO:
+1.Зробити бази даних(стандартну відредагувати, зробити базу даних для заказів, базу даних з описом послуг )
+2.При підтвердженні потрібно знімати гроші з балансу, робити заказ, добавляти його в базу даних.
+
+*/
+    }else{
+      ctx.reply("Возникла ошибка")
+    } 
   }
 );
 submitOrderScene.hears(
@@ -327,6 +342,7 @@ submitOrderScene.hears(
     ctx.scene.leave("submitOrder");
   }
 );
+submitOrderScene.on("message", leave("submitOrder"));
 
 
 module.exports = {
