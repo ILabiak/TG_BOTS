@@ -22,8 +22,8 @@ async function startDataBase() {
   }) */
   //let arr =await getUserOrders(868619239)
   await startDataBase();
-  console.dir(await getUserOrders(868619239))
-  //console.dir(await addOrderId(868619239,'inst.com',112,11))
+  //console.dir(await getUserOrders(868619239))
+  console.dir(await addOrderId(3515,868619239, 50.5,'inst.com',112,"ПОдписчики"))
   //console.dir(await checkUserExistence(868619239))
 })();
 
@@ -106,22 +106,12 @@ async function addBalance(telegram_id, amount) {
   return false;
 }
 
-async function addOrderId(telegram_id, link, charge, orderId) { // переробити
-  let orders = await getUserOrders(telegram_id);
-  if (orders.length > 100) {
-    orders.pop();
-  }
-  orders.unshift({
-    link: link,
-    charge: charge,
-    orderId: orderId,
-  });
-  let sql = `UPDATE \`nakruti\` SET \`order_ids\` = \'${JSON.stringify(
-    orders
-  )}\' WHERE \`nakruti\`.\`telegram_id\` = ${telegram_id.toString()};`;
+async function addOrder(orderId, telegram_id, charge, link, quantity, service) { // переробити
+  let sql = `INSERT INTO \`orders\` (\`id\`, \`orderId\`, \`user\`, \`charge\`, \`link\`, \`start_count\`, \`quantity\`, \`service\`, \`status\`, \`remains\`, \`created\`) 
+  VALUES (NULL, ${orderId.toString()}, ${telegram_id.toString()}, ${charge.toString()}, \'${link.toString()}\', \'\', ${quantity.toString()}, \'${service}\', \'\', \'\', CURRENT_TIMESTAMP);`
   let res = await sqlRequest(sql);
-  if (res.changedRows == 1) return true;
-  return false;
+  if(res.affectedRows == 1)return true;
+  return false; 
 }
 
 async function checkUserExistence(telegram_id) {
@@ -137,6 +127,6 @@ module.exports = {
   getUserBalance,
   addUserToDB,
   addBalance,
-  addOrderId,
+  addOrder,
   checkUserExistence,
 };
