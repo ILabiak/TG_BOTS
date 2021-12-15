@@ -58,6 +58,7 @@ async function getOrderStatus(orderId) {
     .get(
       `${config.smm_website}/api/v2/?key=${config.website_token}&action=status&order=${orderId}`
     )
+    //{"charge":"0.00","start_count":null,"status":"Completed","remains":"0","currency":"RUB"}
     .then((response) => {
       return response.data;
     });

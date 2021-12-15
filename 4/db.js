@@ -21,7 +21,8 @@ async function startDataBase() {
     console.log("Connected!");
   }) */
   //let arr =await getUserOrders(868619239)
-  //console.dir(await getUserBalance(868619239))
+  await startDataBase();
+  console.dir(await getUserOrders(868619239))
   //console.dir(await addOrderId(868619239,'inst.com',112,11))
   //console.dir(await checkUserExistence(868619239))
 })();
@@ -44,11 +45,39 @@ async function sqlRequest(sql) {
   return res;
 }
 
-async function getUserOrders(telegram_id) { // Переробити
-  let sql = `SELECT order_ids FROM \`orders\` WHERE \`user\` = ${telegram_id.toString()}`;
+async function getUserOrders(telegram_id) {
+  let sql = `SELECT * FROM \`orders\` WHERE \`user\` = ${telegram_id.toString()}`;
   let res = await sqlRequest(sql);
-  return eval(res[0].order_ids);
+  return res; // returns array of objects
 }
+/* 
+[
+  RowDataPacket {
+    orderId: 1122,
+    user: '868619239',
+    charge: 55,
+    link: 'fasda.com',
+    start_count: 0,
+    quantity: 550,
+    service: 'TEST SERVICE',
+    status: 'Partial',
+    remains: 50,
+    created: '0000-00-00'
+  },
+  RowDataPacket {
+    orderId: 13153,
+    user: '868619239',
+    charge: 35,
+    link: 's0ifss.com',
+    start_count: 10,
+    quantity: 252,
+    service: 'LOL',
+    status: 'Completed',
+    remains: 55,
+    created: '0000-00-00'
+  }
+]
+*/
 
 async function getUserBalance(telegram_id) {
   let sql = `SELECT balance FROM \`nakruti\` WHERE \`telegram_id\` = ${telegram_id.toString()}`;
