@@ -44,8 +44,8 @@ async function sqlRequest(sql) {
   return res;
 }
 
-async function getUserOrders(telegram_id) {
-  let sql = `SELECT order_ids FROM \`nakruti\` WHERE \`telegram_id\` = ${telegram_id.toString()}`;
+async function getUserOrders(telegram_id) { // Переробити
+  let sql = `SELECT order_ids FROM \`orders\` WHERE \`user\` = ${telegram_id.toString()}`;
   let res = await sqlRequest(sql);
   return eval(res[0].order_ids);
 }
@@ -77,7 +77,7 @@ async function addBalance(telegram_id, amount) {
   return false;
 }
 
-async function addOrderId(telegram_id, link, charge, orderId) {
+async function addOrderId(telegram_id, link, charge, orderId) { // переробити
   let orders = await getUserOrders(telegram_id);
   if (orders.length > 100) {
     orders.pop();
