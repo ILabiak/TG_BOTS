@@ -171,8 +171,7 @@ class RawCrypto {
       "Received at",
     ];
     if (Object.prototype.hasOwnProperty.call(info, "error")) {
-      console.log(`${red}Wrong hash${green}`);
-      return;
+      throw new Error(`${red}Wrong hash${green}`)
     } else if (Object.prototype.hasOwnProperty.call(info, "confirmed")) {
       keys.push("confirmed");
       outputKeys.push("Confirmed at");
