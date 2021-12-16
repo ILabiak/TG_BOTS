@@ -36,8 +36,7 @@ bot.hears("Пополнить💲", (ctx) =>
 );
 bot.hears("Услуги", (ctx) => ctx.scene.enter("category"));
 bot.hears("Моя информация", async (ctx) => {
-  const tgId = ctx.update.message.from.id;
-  const tgUsername = ctx.update.message.from.username;
+  const [tgId, tgUsername] = [ctx.update.message.from.id, ctx.update.message.from.username]
   const balance = await db.getUserBalance(tgId);
   ctx.reply(
     `Имя пользователя: @${tgUsername}
@@ -60,8 +59,7 @@ bot.hears("id", (ctx) => {
   console.dir(ctx.update.message.from);
 });
 bot.command("start", async (ctx) => {
-  const tgId = ctx.update.message.from.id;
-  const tgUsername = ctx.update.message.from.username;
+  const [tgId, tgUsername] = [ctx.update.message.from.id, ctx.update.message.from.username]
   //ctx.reply(`Привет, @${tgUsername}`)
   const exists = await db.checkUserExistence(tgId);
   if (!exists) {

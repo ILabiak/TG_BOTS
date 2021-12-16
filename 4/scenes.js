@@ -258,8 +258,7 @@ makeOrderLinkScene.on("message", (ctx) => {
 
 const makeOrderAmountScene = new Scene("orderAmount");
 makeOrderAmountScene.enter((ctx) => {
-  const min = ctx.session.__scenes.state.min;
-  const max = ctx.session.__scenes.state.max;
+  const [min,max] = [ctx.session.__scenes.state.min, ctx.session.__scenes.state.max]
   ctx.reply(`Укажите количество, которое вы хотите накрутить
 От ${min} до ${max}.`);
 }, Markup.keyboard(["Отменить"]).resize().extra());
@@ -291,10 +290,12 @@ makeOrderAmountScene.on("message", (ctx) => {
 
 const submitOrderScene = new Scene("submitOrder");
 submitOrderScene.enter((ctx) => {
-  const serviceId = ctx.session.__scenes.state.serviceId;
-  const link = ctx.session.__scenes.state.link;
-  const amount = ctx.session.__scenes.state.amount;
-  const price = ctx.session.__scenes.state.price;
+  const [serviceId, link, amount, price] = [
+    ctx.session.__scenes.state.serviceId,
+    ctx.session.__scenes.state.link,
+    ctx.session.__scenes.state.amount,
+    ctx.session.__scenes.state.price
+  ]
   const totalcost = (amount * price) / 1000;
   ctx.reply(`Информация о заказе:
 ID услуги: ${serviceId}
@@ -310,10 +311,12 @@ ID услуги: ${serviceId}
 });
 submitOrderScene.hears(
   "Подтвердить заказ", async (ctx) => {
-    const telegramId = ctx.update.message.from.id;
-    const serviceId = ctx.session.__scenes.state.serviceId;
-    const link = ctx.session.__scenes.state.link;
-    const amount = ctx.session.__scenes.state.amount;
+    const [telegramId, serviceId, link , amount] = [
+      ctx.update.message.from.id,
+      ctx.session.__scenes.state.serviceId,
+      ctx.session.__scenes.state.link,
+      ctx.session.__scenes.state.amount
+    ]
     let orderRes = await api.makeOrder(serviceId,amount,link)
     if(orderRes != false){
 ctx.reply(`Ваш заказ успешно создан
