@@ -43,7 +43,6 @@ class RawCrypto {
       for (const key of keys) {
         resultText.push(`${key}: ${result[key]}`);
       }
-      //  ctx.reply(`${resultText.join('\n')}\n`);
     }
     return resultText.join("\n");
   }
@@ -67,7 +66,6 @@ class RawCrypto {
     result.forEach((el, index) => {
       resultText.push(`${index + 1}. ${el}`);
     });
-    // ctx.reply(`${resultText.join('\n')}\n`);
     return resultText.join("\n");
   }
 
@@ -158,6 +156,7 @@ class RawCrypto {
       console.log(`${red}Wrong hash${green}`);
       return;
     }
+
 
     const info = await safeGet(
       `https://api.blockcypher.com/v1/${abbreviation[chosenCrypto]}/main/txs/${hash}`
