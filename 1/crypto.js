@@ -10,6 +10,19 @@ const errorHandlerWrapped = promised.errorWrapper(promised.handler);
 const safeGet = errorHandlerWrapped(promised.getRequest);
 const safeWrite = errorHandlerWrapped(promised.writeFile);
 
+const cryptoNames = {
+  1: "Bitcoin",
+  2: "Dash",
+  3: "Dogecoin",
+  4: "Litecoin",
+};
+const abbreviation = {
+  1: "btc",
+  2: "dash",
+  3: "doge",
+  4: "ltc",
+};
+
 class RawCrypto {
   //#apiKey;
 
@@ -127,18 +140,6 @@ class RawCrypto {
   }
 
   async transactionInfo() {
-    const cryptoNames = {
-      1: "Bitcoin",
-      2: "Dash",
-      3: "Dogecoin",
-      4: "Litecoin",
-    };
-    const abbreviation = {
-      1: "btc",
-      2: "dash",
-      3: "doge",
-      4: "ltc",
-    };
 
     console.log("\nList of cryptos:");
     for (const key in cryptoNames) {
