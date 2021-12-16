@@ -23,13 +23,14 @@ async function startDataBase() {
   //let arr =await getUserOrders(868619239)
   await startDataBase();
   //console.dir(await getUserOrders(868619239))
-  console.dir(await addOrderId(3515,868619239, 50.5,'inst.com',112,"ПОдписчики"))
+  //console.dir(await getUserBalance(868619239))
+  console.dir(await addOrder(3515,868619239, 50.5,'inst.com',112,"ПОдписчики"))
   //console.dir(await checkUserExistence(868619239))
 })();
 
+
 async function sqlRequest(sql) {
-  let res;
-  const promise = new Promise(function (resolve, reject) {
+return new Promise(function (resolve, reject) {
     con.query(sql, function (err, rows) {
       if (err) {
         console.dir(err);
@@ -38,11 +39,7 @@ async function sqlRequest(sql) {
         resolve(rows);
       }
     });
-  });
-  await promise.then(function (results) {
-    res = results;
-  });
-  return res;
+  }).then();
 }
 
 async function getUserOrders(telegram_id) {
