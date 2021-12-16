@@ -192,10 +192,6 @@ const Crypto = promised.classWrapper(RawCrypto, promised.classHandler);
 
 const temp = new Crypto();
 
-(async () => {
-  //console.dir(await temp.currencyexchanger(0.1,'btc','usd'));
-})();
-
 module.exports = {
   Crypto,
 };
