@@ -320,6 +320,7 @@ ID услуги: ${serviceId}
 });
 submitOrderScene.hears("Подтвердить заказ", async (ctx) => {
   let totalcost = 0;
+  let takeMoney;
   const [telegramId, serviceName, serviceId, link, amount, price] = [
     ctx.update.message.from.id,
     ctx.session.__scenes.state.serviceName,
@@ -335,7 +336,11 @@ submitOrderScene.hears("Подтвердить заказ", async (ctx) => {
     showMenu(ctx);
     ctx.scene.leave("submitOrder");
   }
-  const takeMoney = await db.changeBalance(telegramId, totalcost);
+  if(totalcost > 0){
+    takeMoney = await db.changeBalance(telegramId, totalcost);
+  }else{
+    takeMoney = true;
+  }
   if (takeMoney) {
     const orderRes = await api.makeOrder(serviceId, amount, link);
     if (orderRes) {

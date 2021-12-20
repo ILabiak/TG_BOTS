@@ -21,10 +21,10 @@ async function startDataBase() {
     console.log("Connected!");
   }) */
   //let arr =await getUserOrders(868619239)
-  await startDataBase();
+  //await startDataBase();
   //console.dir(await getUserOrders(868619239))
   //console.dir(await getUserBalance(868619239))
-  console.dir(await addOrder(3515,868619239, 50.5,'inst.com',112,"ПОдписчики"))
+  //console.dir(await addOrder(3515,868619239, 50.5,'inst.com',112,"ПОдписчики"))
   //console.dir(await checkUserExistence(868619239))
 })();
 
@@ -103,7 +103,7 @@ async function changeBalance(telegram_id, amount) {
   return false;
 }
 
-async function addOrder(orderId, telegram_id, charge, link, quantity, service) { // переробити
+async function addOrder(orderId, telegram_id, charge, link, quantity, service) { 
   let sql = `INSERT INTO \`orders\` (\`id\`, \`orderId\`, \`user\`, \`charge\`, \`link\`, \`start_count\`, \`quantity\`, \`service\`, \`status\`, \`remains\`, \`created\`) 
   VALUES (NULL, ${orderId.toString()}, ${telegram_id.toString()}, ${charge.toString()}, \'${link.toString()}\', \'\', ${quantity.toString()}, \'${service}\', \'\', \'\', CURRENT_TIMESTAMP);`
   let res = await sqlRequest(sql);
