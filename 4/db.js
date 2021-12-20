@@ -93,7 +93,7 @@ async function addUserToDB(telegram_id, username) {
   return false;
 }
 
-async function addBalance(telegram_id, amount) {
+async function changeBalance(telegram_id, amount) {
   const balanceStr = await getUserBalance(telegram_id);
   let balance = parseFloat(balanceStr);
   balance += parseFloat(amount);
@@ -123,7 +123,7 @@ module.exports = {
   getUserOrders,
   getUserBalance,
   addUserToDB,
-  addBalance,
+  changeBalance,
   addOrder,
   checkUserExistence,
 };

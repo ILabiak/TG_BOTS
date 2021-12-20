@@ -179,6 +179,7 @@ servicesScene.on("message", async (ctx) => {
     let serviceDetails = await api.getServiceDetails(services, serviceId);
     await ctx.reply(serviceDetails.text);
     ctx.scene.enter("makeOrder", {
+      serviceName: str,
       serviceId: serviceId,
       category: ctx.session.__scenes.state.category,
       min: serviceDetails.min,
@@ -204,6 +205,7 @@ makeOrderScene.enter(async (ctx) => {
 });
 makeOrderScene.hears("Заказать", (ctx) =>
   ctx.scene.enter("orderLink", {
+    serviceName: ctx.session.__scenes.state.serviceName,
     serviceId: ctx.session.__scenes.state.serviceId,
     min: ctx.session.__scenes.state.min,
     max: ctx.session.__scenes.state.max,
@@ -242,6 +244,7 @@ makeOrderLinkScene.on("message", (ctx) => {
   if (linkRegex.test(message)) {
     link = message;
     ctx.scene.enter("orderAmount", {
+      serviceName: ctx.session.__scenes.state.serviceName,
       serviceId: ctx.session.__scenes.state.serviceId,
       min: ctx.session.__scenes.state.min,
       max: ctx.session.__scenes.state.max,
@@ -258,7 +261,10 @@ makeOrderLinkScene.on("message", (ctx) => {
 
 const makeOrderAmountScene = new Scene("orderAmount");
 makeOrderAmountScene.enter((ctx) => {
-  const [min,max] = [ctx.session.__scenes.state.min, ctx.session.__scenes.state.max]
+  const [min, max] = [
+    ctx.session.__scenes.state.min,
+    ctx.session.__scenes.state.max,
+  ];
   ctx.reply(`Укажите количество, которое вы хотите накрутить
 От ${min} до ${max}.`);
 }, Markup.keyboard(["Отменить"]).resize().extra());
@@ -273,6 +279,7 @@ makeOrderAmountScene.on("message", (ctx) => {
     amount <= ctx.session.__scenes.state.max
   ) {
     ctx.scene.enter("submitOrder", {
+      serviceName: ctx.session.__scenes.state.serviceName,
       serviceId: ctx.session.__scenes.state.serviceId,
       min: ctx.session.__scenes.state.min,
       max: ctx.session.__scenes.state.max,
@@ -290,15 +297,17 @@ makeOrderAmountScene.on("message", (ctx) => {
 
 const submitOrderScene = new Scene("submitOrder");
 submitOrderScene.enter((ctx) => {
-  const [serviceId, link, amount, price] = [
+  const [serviceName, serviceId, link, amount, price] = [
+    ctx.session.__scenes.state.serviceName,
     ctx.session.__scenes.state.serviceId,
     ctx.session.__scenes.state.link,
     ctx.session.__scenes.state.amount,
-    ctx.session.__scenes.state.price
-  ]
+    ctx.session.__scenes.state.price,
+  ];
   const totalcost = (amount * price) / 1000;
   ctx.reply(`Информация о заказе:
 ID услуги: ${serviceId}
+Услуга: ${serviceName}
 Ссылка: ${link}
 Количество: ${amount}
 С Вашего баланса спишется ${totalcost} руб.`);
@@ -309,44 +318,65 @@ ID услуги: ${serviceId}
       .extra()
   );
 });
-submitOrderScene.hears(
-  "Подтвердить заказ", async (ctx) => {
-    const [telegramId, serviceId, link , amount] = [
-      ctx.update.message.from.id,
-      ctx.session.__scenes.state.serviceId,
-      ctx.session.__scenes.state.link,
-      ctx.session.__scenes.state.amount
-    ]
-    let orderRes = await api.makeOrder(serviceId,amount,link)
-    if(orderRes != false){
-ctx.reply(`Ваш заказ успешно создан
-ID заказа: ${orderRes}`)
-
-/*
-TO DO:
-1.Зробити бази даних(стандартну відредагувати, зробити базу даних для заказів, базу даних з описом послуг )
-2.При підтвердженні потрібно знімати гроші з балансу, робити заказ, добавляти його в базу даних.
-
-*/
-    }else{
-      ctx.reply("Возникла ошибка")
-    } 
-  }
-);
-submitOrderScene.hears(
-  "Отменить заказ", (ctx) => {
+submitOrderScene.hears("Подтвердить заказ", async (ctx) => {
+  let totalcost = 0;
+  const [telegramId, serviceName, serviceId, link, amount, price] = [
+    ctx.update.message.from.id,
+    ctx.session.__scenes.state.serviceName,
+    ctx.session.__scenes.state.serviceId,
+    ctx.session.__scenes.state.link,
+    ctx.session.__scenes.state.amount,
+    ctx.session.__scenes.state.price,
+  ];
+  totalcost -= (amount * price) / 1000;
+  const userBalance = db.getUserBalance(telegramId);
+  if (userBalance < totalcost) {
+    ctx.reply("Недостаточно средств на балансе.");
     showMenu(ctx);
     ctx.scene.leave("submitOrder");
   }
-);
-submitOrderScene.hears(
-  "Меню", (ctx) => {
+  const takeMoney = await db.changeBalance(telegramId, totalcost);
+  if (takeMoney) {
+    const orderRes = await api.makeOrder(serviceId, amount, link);
+    if (orderRes) {
+      const dbRes = await db.addOrder(
+        orderRes,
+        telegramId,
+        totalcost,
+        link,
+        amount,
+        serviceName
+      );
+      if (dbRes == false) {
+        bot.telegram.sendMessage(
+          admin_telegram_id,
+          `Возникла ошибка при добавлении заказа в БД
+Заказ: ${orderRes}
+TG id: ${telegramId}
+`
+        ); // message to admin
+      }
+
+      ctx.reply(`Ваш заказ успешно создан
+ID заказа: ${orderRes}`);
+      showMenu(ctx);
+      ctx.scene.leave("submitOrder");
+    }
+  } else {
+    ctx.reply("Возникла ошибка");
     showMenu(ctx);
     ctx.scene.leave("submitOrder");
   }
-);
+});
+submitOrderScene.hears("Отменить заказ", (ctx) => {
+  showMenu(ctx);
+  ctx.scene.leave("submitOrder");
+});
+submitOrderScene.hears("Меню", (ctx) => {
+  showMenu(ctx);
+  ctx.scene.leave("submitOrder");
+});
 submitOrderScene.on("message", leave("submitOrder"));
-
 
 module.exports = {
   paymentAmountScene,
