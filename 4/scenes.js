@@ -319,7 +319,7 @@ ID услуги: ${serviceId}
   );
 });
 submitOrderScene.hears("Подтвердить заказ", async (ctx) => {
-  let totalcost = 0;
+  let charge = 0;
   let takeMoney;
   const [telegramId, serviceName, serviceId, link, amount, price] = [
     ctx.update.message.from.id,
@@ -329,7 +329,7 @@ submitOrderScene.hears("Подтвердить заказ", async (ctx) => {
     ctx.session.__scenes.state.amount,
     ctx.session.__scenes.state.price,
   ];
-  totalcost -= (amount * price) / 1000;
+  totalcost = (amount * price) / 1000;
   const userBalance = db.getUserBalance(telegramId);
   if (userBalance < totalcost) {
     ctx.reply("Недостаточно средств на балансе.");
@@ -337,7 +337,8 @@ submitOrderScene.hears("Подтвердить заказ", async (ctx) => {
     ctx.scene.leave("submitOrder");
   }
   if(totalcost > 0){
-    takeMoney = await db.changeBalance(telegramId, totalcost);
+    charge -= totalcost;
+    takeMoney = await db.changeBalance(telegramId, charge);
   }else{
     takeMoney = true;
   }
