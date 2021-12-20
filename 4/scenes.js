@@ -384,6 +384,56 @@ submitOrderScene.hears("Меню", (ctx) => {
 });
 submitOrderScene.on("message", leave("submitOrder"));
 
+
+const userOrdersScene = new Scene("userOrders");
+userOrdersScene.enter(async (ctx) => {
+  let counter;
+  const splitter = 3;
+  if(ctx.session.__scenes.state.counter){
+    counter = ctx.session.__scenes.state.counter
+    console.log("adad" + counter)
+  }else{
+    counter = 0;
+    ctx.session.__scenes.state.counter = counter;
+  }
+const telegramId = ctx.update.message.from.id;
+let orderIds =['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16']
+let ordersArr = [];
+for (let i = 0; i <Math.ceil(orderIds.length/splitter); i++){
+  ordersArr[i] = orderIds.slice((i*splitter), (i*splitter) + splitter);
+}
+ctx.session.__scenes.state.arr = ordersArr;
+/* const orders = await db.getUserOrders(telegramId)
+for(let el of orders){
+  orderIds.push(el.orderId.toString())
+}
+if(!orderIds[0]){
+  ctx.reply("У Вас нет заказов")
+  showMenu(ctx);
+  ctx.scene.leave("userOrders");
+} */
+
+ctx.reply('Список ваших заказов:', Markup.keyboard([...ordersArr[counter], ">>"])
+.resize()
+.extra())
+//console.dir(orderIds)
+
+});
+userOrdersScene.hears(">>", (ctx) => {
+  let counter = ctx.session.__scenes.state.counter;
+  console.dir(counter)
+  counter++;
+  ctx.scene.enter("userOrders",{counter : counter})
+});
+
+userOrdersScene.hears("Меню", leave("userOrders"));
+userOrdersScene.hears("Проверить оплату", async (ctx) => {
+
+});
+qiwiPaymentScene.hears("...", leave("userOrders"));
+
+
+
 module.exports = {
   paymentAmountScene,
   paymentMethodScene,
@@ -394,5 +444,6 @@ module.exports = {
   makeOrderLinkScene,
   makeOrderAmountScene,
   submitOrderScene,
+  userOrdersScene,
   startQiwi,
 };

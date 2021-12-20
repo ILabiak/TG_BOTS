@@ -25,6 +25,7 @@ const stage = new Stage(
     scenes.makeOrderLinkScene,
     scenes.makeOrderAmountScene,
     scenes.submitOrderScene,
+    scenes.userOrdersScene,
   ],
   { ttl: 1800 }
 );
@@ -35,6 +36,7 @@ bot.hears("Пополнить💲", (ctx) =>
   ctx.scene.enter("paymentAmount", { amount: 100 })
 );
 bot.hears("Услуги", (ctx) => ctx.scene.enter("category"));
+bot.hears("Мои заказы", (ctx) => ctx.scene.enter("userOrders"));
 bot.hears("Моя информация", async (ctx) => {
   const [tgId, tgUsername] = [ctx.update.message.from.id, ctx.update.message.from.username]
   const balance = await db.getUserBalance(tgId);
@@ -47,7 +49,7 @@ bot.hears("Моя информация", async (ctx) => {
 
 /*
 TO DO
-1.scene to make an order
+1.scene to make an order DONE
 2. feature to check orders
 3. feature to check order status
 4. Admin features:
