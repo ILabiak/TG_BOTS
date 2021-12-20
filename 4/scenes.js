@@ -336,10 +336,10 @@ submitOrderScene.hears("Подтвердить заказ", async (ctx) => {
     showMenu(ctx);
     ctx.scene.leave("submitOrder");
   }
-  if(totalcost > 0){
+  if (totalcost > 0) {
     charge -= totalcost;
     takeMoney = await db.changeBalance(telegramId, charge);
-  }else{
+  } else {
     takeMoney = true;
   }
   if (takeMoney) {
@@ -384,55 +384,56 @@ submitOrderScene.hears("Меню", (ctx) => {
 });
 submitOrderScene.on("message", leave("submitOrder"));
 
-
-const userOrdersScene = new Scene("userOrders");
+const userOrdersScene = new Scene("userOrders"); //TO DO Make func to appear order information when user writes order id
 userOrdersScene.enter(async (ctx) => {
-  let counter;
+  let counter, orderIds = [], ordersArr = [];
   const splitter = 3;
-  if(ctx.session.__scenes.state.counter){
-    counter = ctx.session.__scenes.state.counter
-    console.log("adad" + counter)
-  }else{
+  const telegramId = ctx.update.message.from.id;
+  if (ctx.session.__scenes.state.counter) {
+    counter = ctx.session.__scenes.state.counter;
+  } else {
     counter = 0;
     ctx.session.__scenes.state.counter = counter;
   }
-const telegramId = ctx.update.message.from.id;
-let orderIds =['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16']
-let ordersArr = [];
-for (let i = 0; i <Math.ceil(orderIds.length/splitter); i++){
-  ordersArr[i] = orderIds.slice((i*splitter), (i*splitter) + splitter);
-}
-ctx.session.__scenes.state.arr = ordersArr;
-/* const orders = await db.getUserOrders(telegramId)
-for(let el of orders){
-  orderIds.push(el.orderId.toString())
-}
-if(!orderIds[0]){
-  ctx.reply("У Вас нет заказов")
-  showMenu(ctx);
-  ctx.scene.leave("userOrders");
-} */
-
-ctx.reply('Список ваших заказов:', Markup.keyboard([...ordersArr[counter], ">>"])
-.resize()
-.extra())
-//console.dir(orderIds)
-
+  const orders = await db.getUserOrders(telegramId);
+  for (let el of orders) {
+    orderIds.push(el.orderId.toString());
+  }
+  if (!orderIds[0]) {
+    ctx.reply("У Вас нет заказов");
+    showMenu(ctx);
+    ctx.scene.leave("userOrders");
+  }
+  for (let i = 0; i < Math.ceil(orderIds.length / splitter); i++) {
+    ordersArr[i] = orderIds.slice(i * splitter, i * splitter + splitter);
+  }
+  ctx.session.__scenes.state.arr = ordersArr;
+  if (counter < 0) counter = 0;
+  if (counter > ordersArr.length - 1) counter = ordersArr.length - 1;
+  if (counter == 0) ordersArr[counter].push(">>");
+  else if (counter == ordersArr.length - 1) ordersArr[counter].push("<<");
+  else if (counter > 0 && counter < ordersArr.length - 1)
+    ordersArr[counter].push(">>", "<<");
+  ctx.reply(
+    "Список ваших заказов:",
+    Markup.keyboard([...ordersArr[counter], "Меню"]).resize().extra()
+  );
 });
 userOrdersScene.hears(">>", (ctx) => {
-  let counter = ctx.session.__scenes.state.counter;
-  console.dir(counter)
+  const counter = ctx.session.__scenes.state.counter;
   counter++;
-  ctx.scene.enter("userOrders",{counter : counter})
+  ctx.scene.enter("userOrders", { counter: counter });
+});
+userOrdersScene.hears("<<", (ctx) => {
+  const counter = ctx.session.__scenes.state.counter;
+  console.dir(counter);
+  counter--;
+  ctx.scene.enter("userOrders", { counter: counter });
 });
 
 userOrdersScene.hears("Меню", leave("userOrders"));
-userOrdersScene.hears("Проверить оплату", async (ctx) => {
-
-});
+userOrdersScene.hears("Проверить оплату", async (ctx) => {});
 qiwiPaymentScene.hears("...", leave("userOrders"));
-
-
 
 module.exports = {
   paymentAmountScene,
