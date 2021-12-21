@@ -6,7 +6,7 @@ module.exports = {
   addPayment,
   getServices,
   makeOrder,
-  getOrderStatus,
+  getOrderDetails,
   getCategories,
   getCategoryServices,
   getServiceDetails,
@@ -53,7 +53,7 @@ async function makeOrder(serviceId, quantity, link) {
   return false;
 }
 
-async function getOrderStatus(orderId) {
+async function getOrderDetails(orderId) {
   const res = await axios
     .get(
       `${config.smm_website}/api/v2/?key=${config.website_token}&action=status&order=${orderId}`

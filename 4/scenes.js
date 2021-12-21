@@ -435,7 +435,8 @@ userOrdersScene.on("message", async (ctx) => {
   const ordersArr = ctx.session.__scenes.state.arr.flat()
   if(ordersArr.includes(message)){
   const orderId = parseInt(message)
-  const orderDetails = await api.getOrderStatus
+  const apiOrderDetails = await api.getOrderDetails(orderId)
+  const dbOrderDetails = await db.getOrderDetails(orderId)
   }
 
 });

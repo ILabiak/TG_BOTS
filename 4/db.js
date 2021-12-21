@@ -22,7 +22,7 @@ async function startDataBase() {
   }) */
   //let arr =await getUserOrders(868619239)
   //await startDataBase();
-  //console.dir(await getOrderDetails(3515))
+  //console.dir(await updateOrderDetails(3515, 10.5, 11, 'Completed', 22))
   //console.dir(await getUserBalance(868619239))
   //console.dir(await addOrder(3515,868619239, 50.5,'inst.com',112,"ПОдписчики"))
   //console.dir(await checkUserExistence(868619239))
@@ -125,6 +125,13 @@ async function getOrderDetails(orderId) {
   return res[0];
 }
 
+async function updateOrderDetails(orderId, charge, start_count, status, remains) {
+  let sql = `UPDATE \`orders\` SET \`charge\` = ${charge.toString()}, \`start_count\` = ${start_count.toString()}, \`status\` = '${status}', \`remains\` = ${remains.toString()} WHERE \`orders\`.\`orderId\` = ${orderId.toString()};`;
+  let res = await sqlRequest(sql);
+  if (res.changedRows == 1) return true;
+  return false;
+}
+
 module.exports = {
   startDataBase,
   getUserOrders,
@@ -134,4 +141,5 @@ module.exports = {
   addOrder,
   checkUserExistence,
   getOrderDetails,
+  updateOrderDetails,
 };
