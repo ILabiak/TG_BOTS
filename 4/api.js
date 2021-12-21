@@ -72,11 +72,18 @@ async function getOrderStatus(orderId) {
     "In progress": "В ходе выполнения",
     Fail: "Возникла ошибка",
   };
-  let status = `Цена: ${res.charge} руб.
+  let resultText = `Цена: ${res.charge} руб.
 Статус: ${translate[res.status]}
 Изначально: ${res.start_count}
 Остается: ${res.remains}`;
-  return status;
+const resObj = {
+  charge : res.charge,
+  start_count : res.start_count,
+  status : res.status,
+  remains : res.remains,
+  text : resultText,
+}
+  return resObj;
 }
 
 function getCategories(arr) {

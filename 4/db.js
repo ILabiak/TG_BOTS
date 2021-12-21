@@ -22,7 +22,7 @@ async function startDataBase() {
   }) */
   //let arr =await getUserOrders(868619239)
   //await startDataBase();
-  //console.dir(await getUserOrders(868619239))
+  //console.dir(await getOrderDetails(3515))
   //console.dir(await getUserBalance(868619239))
   //console.dir(await addOrder(3515,868619239, 50.5,'inst.com',112,"ПОдписчики"))
   //console.dir(await checkUserExistence(868619239))
@@ -118,6 +118,13 @@ async function checkUserExistence(telegram_id) {
   return true;
 }
 
+async function getOrderDetails(orderId) {
+  let sql = `SELECT * FROM \`orders\` WHERE \`orderId\` = ${orderId.toString()}`;
+  let res = await sqlRequest(sql);
+  if (res[0] === undefined) return false;
+  return res[0];
+}
+
 module.exports = {
   startDataBase,
   getUserOrders,
@@ -126,4 +133,5 @@ module.exports = {
   changeBalance,
   addOrder,
   checkUserExistence,
+  getOrderDetails,
 };

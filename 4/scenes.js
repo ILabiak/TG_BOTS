@@ -384,7 +384,7 @@ submitOrderScene.hears("Меню", (ctx) => {
 });
 submitOrderScene.on("message", leave("submitOrder"));
 
-const userOrdersScene = new Scene("userOrders"); //TO DO Make func to appear order information when user writes order id
+const userOrdersScene = new Scene("userOrders"); //TO DO Make func to appear order information when user writes order id, make columns
 userOrdersScene.enter(async (ctx) => {
   let counter, orderIds = [], ordersArr = [];
   const splitter = 3;
@@ -420,18 +420,29 @@ userOrdersScene.enter(async (ctx) => {
   );
 });
 userOrdersScene.hears(">>", (ctx) => {
-  const counter = ctx.session.__scenes.state.counter;
+  let counter = ctx.session.__scenes.state.counter;
   counter++;
   ctx.scene.enter("userOrders", { counter: counter });
 });
 userOrdersScene.hears("<<", (ctx) => {
-  const counter = ctx.session.__scenes.state.counter;
+  let counter = ctx.session.__scenes.state.counter;
   console.dir(counter);
   counter--;
   ctx.scene.enter("userOrders", { counter: counter });
 });
+userOrdersScene.on("message", async (ctx) => {
+  const message = ctx.message.text
+  const ordersArr = ctx.session.__scenes.state.arr.flat()
+  if(ordersArr.includes(message)){
+  const orderId = parseInt(message)
+  const orderDetails = await api.getOrderStatus
+  }
 
-userOrdersScene.hears("Меню", leave("userOrders"));
+});
+userOrdersScene.hears("Меню", (ctx) => {
+  showMenu(ctx);
+  ctx.scene.leave("userOrders");
+});
 userOrdersScene.hears("Проверить оплату", async (ctx) => {});
 qiwiPaymentScene.hears("...", leave("userOrders"));
 
