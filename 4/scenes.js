@@ -354,13 +354,7 @@ submitOrderScene.hears("Подтвердить заказ", async (ctx) => {
         serviceName
       );
       if (dbRes == false) {
-        bot.telegram.sendMessage(
-          admin_telegram_id,
-          `Возникла ошибка при добавлении заказа в БД
-Заказ: ${orderRes}
-TG id: ${telegramId}
-`
-        ); // message to admin
+// message to admin
       }
 
       ctx.reply(`Ваш заказ успешно создан
@@ -386,8 +380,10 @@ submitOrderScene.on("message", leave("submitOrder"));
 
 const userOrdersScene = new Scene("userOrders"); //TO DO Make func to appear order information when user writes order id, make columns
 userOrdersScene.enter(async (ctx) => {
-  let counter, orderIds = [], ordersArr = [];
-  const splitter = 3;
+  let counter,
+    orderIds = [],
+    ordersArr = [];
+  const splitter = 4;
   const telegramId = ctx.update.message.from.id;
   if (ctx.session.__scenes.state.counter) {
     counter = ctx.session.__scenes.state.counter;
@@ -416,7 +412,9 @@ userOrdersScene.enter(async (ctx) => {
     ordersArr[counter].push(">>", "<<");
   ctx.reply(
     "Список ваших заказов:",
-    Markup.keyboard([...ordersArr[counter], "Меню"]).resize().extra()
+    Markup.keyboard([...ordersArr[counter], "Меню"], {columns : 2})
+      .resize()
+      .extra()
   );
 });
 userOrdersScene.hears(">>", (ctx) => {
@@ -426,26 +424,39 @@ userOrdersScene.hears(">>", (ctx) => {
 });
 userOrdersScene.hears("<<", (ctx) => {
   let counter = ctx.session.__scenes.state.counter;
-  console.dir(counter);
   counter--;
   ctx.scene.enter("userOrders", { counter: counter });
-});
-userOrdersScene.on("message", async (ctx) => {
-  const message = ctx.message.text
-  const ordersArr = ctx.session.__scenes.state.arr.flat()
-  if(ordersArr.includes(message)){
-  const orderId = parseInt(message)
-  const apiOrderDetails = await api.getOrderDetails(orderId)
-  const dbOrderDetails = await db.getOrderDetails(orderId)
-  }
-
 });
 userOrdersScene.hears("Меню", (ctx) => {
   showMenu(ctx);
   ctx.scene.leave("userOrders");
 });
-userOrdersScene.hears("Проверить оплату", async (ctx) => {});
-qiwiPaymentScene.hears("...", leave("userOrders"));
+userOrdersScene.on("message", async (ctx) => {
+  const message = ctx.message.text;
+  const ordersArr = ctx.session.__scenes.state.arr.flat();
+  if (ordersArr.includes(message)) {
+    const orderId = parseInt(message);
+    const apiOrderDetails = await api.getOrderDetails(orderId);
+    const dbOrderDetails = await db.getOrderDetails(orderId);
+    if (apiOrderDetails.charge < dbOrderDetails.charge) {
+      const chargeDiff = dbOrderDetails.charge - apiOrderDetails.charge;
+      const telegramId = ctx.update.message.from.id;
+      await db.changeBalance(telegramId, chargeDiff);
+    }
+    await db.updateOrderDetails(
+      orderId,
+      apiOrderDetails.charge,
+      apiOrderDetails.start_count,
+      apiOrderDetails.status,
+      apiOrderDetails.remains
+    );
+    const orderInfo = apiOrderDetails.text + `Ссылка: ${dbOrderDetails.link}`;
+    ctx.reply(orderInfo);
+  } else {
+    showMenu(ctx);
+    ctx.scene.leave("userOrders");
+  }
+});
 
 module.exports = {
   paymentAmountScene,

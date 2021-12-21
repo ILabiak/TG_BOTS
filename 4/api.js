@@ -62,7 +62,7 @@ async function getOrderDetails(orderId) {
     .then((response) => {
       return response.data;
     });
-  if (res.start_count == null) res.start_count = "";
+  if (res.start_count == null) res.start_count = 0;
   let translate = {
     Pending: "В ожидании",
     Completed: "Завершено",
@@ -75,10 +75,10 @@ async function getOrderDetails(orderId) {
   let resultText = `Цена: ${res.charge} руб.
 Статус: ${translate[res.status]}
 Изначально: ${res.start_count}
-Остается: ${res.remains}`;
+Остается: ${res.remains}\n`;
 const resObj = {
-  charge : res.charge,
-  start_count : res.start_count,
+  charge : parseFloat(res.charge),
+  start_count : parseInt(res.start_count),
   status : res.status,
   remains : res.remains,
   text : resultText,

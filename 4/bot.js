@@ -50,8 +50,8 @@ bot.hears("Моя информация", async (ctx) => {
 /*
 TO DO
 1.scene to make an order DONE
-2. feature to check orders
-3. feature to check order status
+2. feature to check orders DONE
+3. feature to check order status DONE
 4. Admin features:
  4.1 Add (or remove) balance to user directly from telegram
  4.2 Send message to admin when new payment is received
