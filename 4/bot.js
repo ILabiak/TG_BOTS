@@ -31,6 +31,9 @@ const stage = new Stage(
 );
 bot.use(session());
 bot.use(stage.middleware());
+bot.hears("test", (ctx) => {
+  //ctx.reply('test', Markup.inlineKeyboard([Markup.callbackButton('➡️ Next', 'next')]))
+});
 //bot.hears('Заказать накрутку', (ctx) => ctx.scene.enter('makeOrder'))
 bot.hears("Пополнить💲", (ctx) =>
   ctx.scene.enter("paymentAmount", { amount: 100 })
@@ -104,3 +107,6 @@ const start = async () => {
 (async () => {
   await start();
 })();
+
+process.once('SIGINT', () => bot.stop('SIGINT'))
+process.once('SIGTERM', () => bot.stop('SIGTERM'))
