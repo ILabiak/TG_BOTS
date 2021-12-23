@@ -31,9 +31,9 @@ const stage = new Stage(
 );
 bot.use(session());
 bot.use(stage.middleware());
-bot.hears("test", (ctx) => {
-  //ctx.reply('test', Markup.inlineKeyboard([Markup.callbackButton('➡️ Next', 'next')]))
-});
+bot.action(/^\d+$/, (ctx) => {
+  ctx.reply("OOOH")
+})
 //bot.hears('Заказать накрутку', (ctx) => ctx.scene.enter('makeOrder'))
 bot.hears("Пополнить💲", (ctx) =>
   ctx.scene.enter("paymentAmount", { amount: 100 })

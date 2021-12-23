@@ -378,13 +378,20 @@ submitOrderScene.hears("Меню", (ctx) => {
 });
 submitOrderScene.on("message", leave("submitOrder"));
 
-const userOrdersScene = new Scene("userOrders"); //TO DO Make func to appear order information when user writes order id, make columns
+const userOrdersScene = new Scene("userOrders"); //TO DO Make inline keyboard
 userOrdersScene.enter(async (ctx) => {
   let counter,
+    telegramId,
     orderIds = [],
     ordersArr = [];
-  const splitter = 4;
-  const telegramId = ctx.update.message.from.id;
+  const splitter = 3;
+  if(!ctx.session.__scenes.state.telegramId){
+    telegramId = ctx.update.message.from.id;
+    ctx.session.__scenes.state.telegramId = telegramId;
+  }else{
+    telegramId = ctx.session.__scenes.state.telegramId;
+  }
+
   if (ctx.session.__scenes.state.counter) {
     counter = ctx.session.__scenes.state.counter;
   } else {
@@ -393,31 +400,51 @@ userOrdersScene.enter(async (ctx) => {
   }
   const orders = await db.getUserOrders(telegramId);
   for (let el of orders) {
-    orderIds.push(el.orderId.toString());
+    orderIds.push({
+    text : el.orderId.toString(),
+    callback_data : el.orderId.toString()});
   }
   if (!orderIds[0]) {
     ctx.reply("У Вас нет заказов");
     showMenu(ctx);
     ctx.scene.leave("userOrders");
   }
-  for (let i = 0; i < Math.ceil(orderIds.length / splitter); i++) {
+
+ for (let i = 0; i < Math.ceil(orderIds.length / splitter); i++) {
     ordersArr[i] = orderIds.slice(i * splitter, i * splitter + splitter);
   }
+
   ctx.session.__scenes.state.arr = ordersArr;
   if (counter < 0) counter = 0;
   if (counter > ordersArr.length - 1) counter = ordersArr.length - 1;
-  if (counter == 0) ordersArr[counter].push(">>");
-  else if (counter == ordersArr.length - 1) ordersArr[counter].push("<<");
-  else if (counter > 0 && counter < ordersArr.length - 1)
-    ordersArr[counter].push(">>", "<<");
-  ctx.reply(
-    "Список ваших заказов:",
-    Markup.keyboard([...ordersArr[counter], "Меню"], {columns : 2})
-      .resize()
-      .extra()
-  );
+  if (counter == 0) ordersArr[counter].push({text : ">>", callback_data : ">>"});
+  else if (counter == ordersArr.length - 1) ordersArr[counter].push({text : "<<", callback_data : "<<"});
+  else if (counter > 0 && counter < ordersArr.length - 1){
+    ordersArr[counter].unshift({text : "<<", callback_data : "<<"});
+    ordersArr[counter].push({text : ">>", callback_data : ">>"})
+  }
+  ctx.telegram.sendMessage(ctx.chat.id, 'Список ваших заказов:..',{
+    reply_markup: {
+      inline_keyboard : [
+        [...ordersArr[counter]]
+      ]
+    }
+  })
 });
-userOrdersScene.hears(">>", (ctx) => {
+  userOrdersScene.action(">>", (ctx) => {
+    ctx.deleteMessage()
+    let counter = ctx.session.__scenes.state.counter;
+    counter++;
+    ctx.scene.enter("userOrders", {telegramId : ctx.session.__scenes.state.telegramId, counter: counter, arr : ctx.session.__scenes.state.arr});
+  });
+  userOrdersScene.action("<<", (ctx) => {
+    ctx.deleteMessage()
+    let counter = ctx.session.__scenes.state.counter;
+    counter--;
+    ctx.scene.enter("userOrders", {telegramId : ctx.session.__scenes.state.telegramId, counter: counter, arr : ctx.session.__scenes.state.arr});
+  });
+
+/* userOrdersScene.hears(">>", (ctx) => {
   let counter = ctx.session.__scenes.state.counter;
   counter++;
   ctx.scene.enter("userOrders", { counter: counter });
@@ -430,7 +457,7 @@ userOrdersScene.hears("<<", (ctx) => {
 userOrdersScene.hears("Меню", (ctx) => {
   showMenu(ctx);
   ctx.scene.leave("userOrders");
-});
+}); */
 userOrdersScene.on("message", async (ctx) => {
   const message = ctx.message.text;
   const ordersArr = ctx.session.__scenes.state.arr.flat();

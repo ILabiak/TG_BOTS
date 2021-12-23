@@ -16,7 +16,7 @@ async function startDataBase() {
   });
 }
 (async () => {
-  await startDataBase();
+  //await startDataBase();
   //console.dir(await getUserOrders(868619239))
   //console.dir(await getUserBalance(868619239))
   //console.dir(await addUserToDB(234234234, 'Testin.'))
