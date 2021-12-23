@@ -400,7 +400,7 @@ userOrdersScene.enter(async (ctx) => {
     counter = 0;
     ctx.session.__scenes.state.counter = counter;
   }
-  if(!ctx.session.__scenes.state.arr){
+  if (!ctx.session.__scenes.state.arr) {
     const orders = await db.getUserOrders(telegramId);
     for (let el of orders) {
       orderIds.push(el.orderId.toString());
@@ -417,16 +417,16 @@ userOrdersScene.enter(async (ctx) => {
     for (let i = 0; i < Math.ceil(keyboardIds.length / splitter); i++) {
       keyboardArr[i] = keyboardIds.slice(i * splitter, i * splitter + splitter);
     }
-  
+
     ctx.session.__scenes.state.arr = JSON.parse(JSON.stringify(orderIds));
-    ctx.session.__scenes.state.keyboardArr = JSON.parse(JSON.stringify(keyboardArr));
-/*     console.log('2')
-    console.dir([...keyboardArr]) */
-  }else{
+    ctx.session.__scenes.state.keyboardArr = JSON.parse(
+      JSON.stringify(keyboardArr)
+    );
+  } else {
     ordersArr = JSON.parse(JSON.stringify(ctx.session.__scenes.state.arr));
-    keyboardArr = JSON.parse(JSON.stringify(ctx.session.__scenes.state.keyboardArr));
-/*     console.log('4')
-    console.dir([...ctx.session.__scenes.state.keyboardArr]) */
+    keyboardArr = JSON.parse(
+      JSON.stringify(ctx.session.__scenes.state.keyboardArr)
+    );
   }
 
   if (counter < 0) counter = 0;
@@ -471,15 +471,13 @@ userOrdersScene.action("<<", (ctx) => {
   });
 });
 userOrdersScene.action("menu", (ctx) => {
+  ctx.deleteMessage();
   showMenu(ctx);
   ctx.scene.leave("userOrders");
 });
-userOrdersScene.action(/^\d+$/, (ctx) => {
-console.dir(ctx)
-});
-userOrdersScene.on("message", async (ctx) => {
-  const message = ctx.message.text;
-  const ordersArr = ctx.session.__scenes.state.arr.flat();
+userOrdersScene.action(/^\d+$/, async (ctx) => {
+  const message = ctx.update.callback_query.data;
+  const ordersArr = ctx.session.__scenes.state.arr;
   if (ordersArr.includes(message)) {
     const orderId = parseInt(message);
     const apiOrderDetails = await api.getOrderDetails(orderId);
@@ -502,6 +500,10 @@ userOrdersScene.on("message", async (ctx) => {
     showMenu(ctx);
     ctx.scene.leave("userOrders");
   }
+});
+userOrdersScene.on("message", async (ctx) => {
+  showMenu(ctx);
+  ctx.scene.leave("userOrders");
 });
 
 module.exports = {
