@@ -176,8 +176,9 @@ servicesScene.on("message", async (ctx) => {
     const index = str.indexOf(":");
     const serviceId = str.slice(2, index);
     const services = await api.getServices();
-    let serviceDetails = await api.getServiceDetails(services, serviceId);
-    await ctx.reply(serviceDetails.text);
+    const serviceDetails = await api.getServiceDetails(services, serviceId);
+    const serviceDescription = await db.getServiceDescription(serviceId)
+    await ctx.reply(serviceDetails.text + serviceDescription);
     ctx.scene.enter("makeOrder", {
       serviceName: str,
       serviceId: serviceId,
