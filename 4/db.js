@@ -16,7 +16,7 @@ async function startDataBase() {
   });
 }
 (async () => {
-  //await startDataBase();
+  await startDataBase();
   //console.dir(await getUserOrders(868619239))
   //console.dir(await getUserBalance(868619239))
   //console.dir(await addUserToDB(234234234, 'Testin.'))
@@ -25,6 +25,7 @@ async function startDataBase() {
   //console.dir(await checkUserExistence(868619239))
   //console.dir(await getOrderDetails(3555))
   //console.dir(await updateOrderDetails(3555, 10.5, 11, 'Completed', 22))
+  console.dir(await getServiceDescription(12))
 })();
 
 async function sqlRequest(sql, params = null) {
@@ -143,6 +144,14 @@ async function updateOrderDetails(
   return false;
 }
 
+async function getServiceDescription(serviceId) {
+  let sql = `SELECT * FROM \`service_descriptions\` WHERE \`serviceId\` = ?`;
+  let res = await sqlRequest(sql, [serviceId.toString()]);
+  if (res[0] === undefined) return '';
+  return `Описание:
+${res[0].description}`
+}
+
 module.exports = {
   startDataBase,
   getUserOrders,
@@ -153,4 +162,5 @@ module.exports = {
   checkUserExistence,
   getOrderDetails,
   updateOrderDetails,
+  getServiceDescription,
 };
