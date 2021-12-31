@@ -31,14 +31,13 @@ const stage = new Stage(
 );
 bot.use(session());
 bot.use(stage.middleware());
-/* bot.action(/^\d+$/, (ctx) => {
-  ctx.reply("OOOH")
-}) */
-//bot.hears('Заказать накрутку', (ctx) => ctx.scene.enter('makeOrder'))
+bot.catch((err) => {
+  bot.telegram.sendMessage(config.admin_telegram_id, err.toString());
+})
 bot.hears("Пополнить💲", (ctx) =>
   ctx.scene.enter("paymentAmount", { amount: 100 })
 );
-bot.hears("Услуги", (ctx) => ctx.scene.enter("category"));
+bot.hears("Заказать накрутку", (ctx) => ctx.scene.enter("category"));
 bot.hears("Мои заказы", (ctx) => ctx.scene.enter("userOrders"));
 bot.hears("Моя информация", async (ctx) => {
   const [tgId, tgUsername] = [ctx.update.message.from.id, ctx.update.message.from.username]
@@ -57,7 +56,7 @@ TO DO
 3. feature to check order status DONE
 4. Admin features:
  4.1 Add (or remove) balance to user directly from telegram
- 4.2 Send message to admin when new payment is received
+ 4.2 Send message to admin when new payment is received DONE
  */
 
 bot.hears("id", (ctx) => {
@@ -76,7 +75,7 @@ bot.command("start", async (ctx) => {
         "Заказать накрутку",
         "Мои заказы",
         "Пополнить💲",
-        "Услуги",
+        "Поддержка",
       ])
         .resize()
         .extra()
@@ -90,7 +89,7 @@ bot.command("start", async (ctx) => {
       "Заказать накрутку",
       "Мои заказы",
       "Пополнить💲",
-      "Услуги",
+      "Поддержка",
     ])
       .resize()
       .extra()
