@@ -176,9 +176,11 @@ servicesScene.on("message", async (ctx) => {
     const index = str.indexOf(":");
     const serviceId = str.slice(2, index);
     const services = await api.getServices();
-    let serviceDetails = await api.getServiceDetails(services, serviceId);
-    await ctx.reply(serviceDetails.text);
+    const serviceDetails = await api.getServiceDetails(services, serviceId);
+    const serviceDescription = await db.getServiceDescription(serviceId)
+    await ctx.reply(serviceDetails.text + serviceDescription);
     ctx.scene.enter("makeOrder", {
+      serviceName: str,
       serviceId: serviceId,
       category: ctx.session.__scenes.state.category,
       min: serviceDetails.min,
@@ -204,6 +206,7 @@ makeOrderScene.enter(async (ctx) => {
 });
 makeOrderScene.hears("Заказать", (ctx) =>
   ctx.scene.enter("orderLink", {
+    serviceName: ctx.session.__scenes.state.serviceName,
     serviceId: ctx.session.__scenes.state.serviceId,
     min: ctx.session.__scenes.state.min,
     max: ctx.session.__scenes.state.max,
@@ -242,6 +245,7 @@ makeOrderLinkScene.on("message", (ctx) => {
   if (linkRegex.test(message)) {
     link = message;
     ctx.scene.enter("orderAmount", {
+      serviceName: ctx.session.__scenes.state.serviceName,
       serviceId: ctx.session.__scenes.state.serviceId,
       min: ctx.session.__scenes.state.min,
       max: ctx.session.__scenes.state.max,
@@ -258,8 +262,10 @@ makeOrderLinkScene.on("message", (ctx) => {
 
 const makeOrderAmountScene = new Scene("orderAmount");
 makeOrderAmountScene.enter((ctx) => {
-  const min = ctx.session.__scenes.state.min;
-  const max = ctx.session.__scenes.state.max;
+  const [min, max] = [
+    ctx.session.__scenes.state.min,
+    ctx.session.__scenes.state.max,
+  ];
   ctx.reply(`Укажите количество, которое вы хотите накрутить
 От ${min} до ${max}.`);
 }, Markup.keyboard(["Отменить"]).resize().extra());
@@ -274,6 +280,7 @@ makeOrderAmountScene.on("message", (ctx) => {
     amount <= ctx.session.__scenes.state.max
   ) {
     ctx.scene.enter("submitOrder", {
+      serviceName: ctx.session.__scenes.state.serviceName,
       serviceId: ctx.session.__scenes.state.serviceId,
       min: ctx.session.__scenes.state.min,
       max: ctx.session.__scenes.state.max,
@@ -291,13 +298,17 @@ makeOrderAmountScene.on("message", (ctx) => {
 
 const submitOrderScene = new Scene("submitOrder");
 submitOrderScene.enter((ctx) => {
-  const serviceId = ctx.session.__scenes.state.serviceId;
-  const link = ctx.session.__scenes.state.link;
-  const amount = ctx.session.__scenes.state.amount;
-  const price = ctx.session.__scenes.state.price;
+  const [serviceName, serviceId, link, amount, price] = [
+    ctx.session.__scenes.state.serviceName,
+    ctx.session.__scenes.state.serviceId,
+    ctx.session.__scenes.state.link,
+    ctx.session.__scenes.state.amount,
+    ctx.session.__scenes.state.price,
+  ];
   const totalcost = (amount * price) / 1000;
   ctx.reply(`Информация о заказе:
 ID услуги: ${serviceId}
+Услуга: ${serviceName}
 Ссылка: ${link}
 Количество: ${amount}
 С Вашего баланса спишется ${totalcost} руб.`);
@@ -308,42 +319,193 @@ ID услуги: ${serviceId}
       .extra()
   );
 });
-submitOrderScene.hears(
-  "Подтвердить заказ", async (ctx) => {
-    const telegramId = ctx.update.message.from.id;
-    const serviceId = ctx.session.__scenes.state.serviceId;
-    const link = ctx.session.__scenes.state.link;
-    const amount = ctx.session.__scenes.state.amount;
-    let orderRes = await api.makeOrder(serviceId,amount,link)
-    if(orderRes != false){
-ctx.reply(`Ваш заказ успешно создан
-ID заказа: ${orderRes}`)
-
-/*
-TO DO:
-1.Зробити бази даних(стандартну відредагувати, зробити базу даних для заказів, базу даних з описом послуг )
-2.При підтвердженні потрібно знімати гроші з балансу, робити заказ, добавляти його в базу даних.
-
-*/
-    }else{
-      ctx.reply("Возникла ошибка")
-    } 
-  }
-);
-submitOrderScene.hears(
-  "Отменить заказ", (ctx) => {
+submitOrderScene.hears("Подтвердить заказ", async (ctx) => {
+  let charge = 0;
+  let takeMoney;
+  const [telegramId, serviceName, serviceId, link, amount, price] = [
+    ctx.update.message.from.id,
+    ctx.session.__scenes.state.serviceName,
+    ctx.session.__scenes.state.serviceId,
+    ctx.session.__scenes.state.link,
+    ctx.session.__scenes.state.amount,
+    ctx.session.__scenes.state.price,
+  ];
+  totalcost = (amount * price) / 1000;
+  const userBalance = db.getUserBalance(telegramId);
+  if (userBalance < totalcost) {
+    ctx.reply("Недостаточно средств на балансе.");
     showMenu(ctx);
     ctx.scene.leave("submitOrder");
   }
-);
-submitOrderScene.hears(
-  "Меню", (ctx) => {
+  if (totalcost > 0) {
+    charge -= totalcost;
+    takeMoney = await db.changeBalance(telegramId, charge);
+  } else {
+    takeMoney = true;
+  }
+  if (takeMoney) {
+    const orderRes = await api.makeOrder(serviceId, amount, link);
+    if (orderRes) {
+      const dbRes = await db.addOrder(
+        orderRes,
+        telegramId,
+        totalcost,
+        link,
+        amount,
+        serviceName
+      );
+      if (dbRes == false) {
+        // message to admin
+      }
+
+      ctx.reply(`Ваш заказ успешно создан
+ID заказа: ${orderRes}`);
+      showMenu(ctx);
+      ctx.scene.leave("submitOrder");
+    }
+  } else {
+    ctx.reply("Возникла ошибка");
     showMenu(ctx);
     ctx.scene.leave("submitOrder");
   }
-);
+});
+submitOrderScene.hears("Отменить заказ", (ctx) => {
+  showMenu(ctx);
+  ctx.scene.leave("submitOrder");
+});
+submitOrderScene.hears("Меню", (ctx) => {
+  showMenu(ctx);
+  ctx.scene.leave("submitOrder");
+});
 submitOrderScene.on("message", leave("submitOrder"));
 
+const userOrdersScene = new Scene("userOrders"); //TO DO Make inline keyboard
+userOrdersScene.enter(async (ctx) => {
+  let counter,
+    telegramId,
+    orderIds = [],
+    keyboardIds = [],
+    keyboardArr = [],
+    ordersArr = [];
+  const splitter = 3;
+  if (!ctx.session.__scenes.state.telegramId) {
+    telegramId = ctx.update.message.from.id;
+    ctx.session.__scenes.state.telegramId = telegramId;
+  } else {
+    telegramId = ctx.session.__scenes.state.telegramId;
+  }
+
+  if (ctx.session.__scenes.state.counter) {
+    counter = ctx.session.__scenes.state.counter;
+  } else {
+    counter = 0;
+    ctx.session.__scenes.state.counter = counter;
+  }
+  if (!ctx.session.__scenes.state.arr) {
+    const orders = await db.getUserOrders(telegramId);
+    for (let el of orders) {
+      orderIds.push(el.orderId.toString());
+      keyboardIds.push({
+        text: el.orderId.toString(),
+        callback_data: el.orderId.toString(),
+      });
+    }
+    if (!orderIds[0]) {
+      ctx.reply("У Вас нет заказов");
+      showMenu(ctx);
+      ctx.scene.leave("userOrders");
+    }
+    for (let i = 0; i < Math.ceil(keyboardIds.length / splitter); i++) {
+      keyboardArr[i] = keyboardIds.slice(i * splitter, i * splitter + splitter);
+    }
+
+    ctx.session.__scenes.state.arr = JSON.parse(JSON.stringify(orderIds));
+    ctx.session.__scenes.state.keyboardArr = JSON.parse(
+      JSON.stringify(keyboardArr)
+    );
+  } else {
+    ordersArr = JSON.parse(JSON.stringify(ctx.session.__scenes.state.arr));
+    keyboardArr = JSON.parse(
+      JSON.stringify(ctx.session.__scenes.state.keyboardArr)
+    );
+  }
+
+  if (counter < 0) counter = 0;
+  if (counter > keyboardArr.length - 1) counter = keyboardArr.length - 1;
+  if (counter == 0)
+    keyboardArr[counter].push({ text: ">>", callback_data: ">>" });
+  else if (counter == keyboardArr.length - 1)
+    keyboardArr[counter].push({ text: "<<", callback_data: "<<" });
+  else if (counter > 0 && counter < keyboardArr.length - 1) {
+    keyboardArr[counter].unshift({ text: "<<", callback_data: "<<" });
+    keyboardArr[counter].push({ text: ">>", callback_data: ">>" });
+  }
+  ctx.telegram.sendMessage(ctx.chat.id, "Список ваших заказов:", {
+    reply_markup: {
+      inline_keyboard: [
+        [...keyboardArr[counter]],
+        [{ text: "Меню", callback_data: "menu" }],
+      ],
+    },
+  });
+});
+userOrdersScene.action(">>", (ctx) => {
+  ctx.deleteMessage();
+  let counter = ctx.session.__scenes.state.counter;
+  counter++;
+  ctx.scene.enter("userOrders", {
+    telegramId: ctx.session.__scenes.state.telegramId,
+    counter: counter,
+    arr: ctx.session.__scenes.state.arr,
+    keyboardArr: ctx.session.__scenes.state.keyboardArr,
+  });
+});
+userOrdersScene.action("<<", (ctx) => {
+  ctx.deleteMessage();
+  let counter = ctx.session.__scenes.state.counter;
+  counter--;
+  ctx.scene.enter("userOrders", {
+    telegramId: ctx.session.__scenes.state.telegramId,
+    counter: counter,
+    arr: ctx.session.__scenes.state.arr,
+    keyboardArr: ctx.session.__scenes.state.keyboardArr,
+  });
+});
+userOrdersScene.action("menu", (ctx) => {
+  ctx.deleteMessage();
+  showMenu(ctx);
+  ctx.scene.leave("userOrders");
+});
+userOrdersScene.action(/^\d+$/, async (ctx) => {
+  const message = ctx.update.callback_query.data;
+  const ordersArr = ctx.session.__scenes.state.arr;
+  if (ordersArr.includes(message)) {
+    const orderId = parseInt(message);
+    const apiOrderDetails = await api.getOrderDetails(orderId);
+    const dbOrderDetails = await db.getOrderDetails(orderId);
+    if (apiOrderDetails.charge < dbOrderDetails.charge) {
+      const chargeDiff = dbOrderDetails.charge - apiOrderDetails.charge;
+      const telegramId = ctx.update.message.from.id;
+      await db.changeBalance(telegramId, chargeDiff);
+    }
+    await db.updateOrderDetails(
+      orderId,
+      apiOrderDetails.charge,
+      apiOrderDetails.start_count,
+      apiOrderDetails.status,
+      apiOrderDetails.remains
+    );
+    const orderInfo = apiOrderDetails.text + `Ссылка: ${dbOrderDetails.link}`;
+    ctx.reply(orderInfo);
+  } else {
+    showMenu(ctx);
+    ctx.scene.leave("userOrders");
+  }
+});
+userOrdersScene.on("message", async (ctx) => {
+  showMenu(ctx);
+  ctx.scene.leave("userOrders");
+});
 
 module.exports = {
   paymentAmountScene,
@@ -355,5 +517,6 @@ module.exports = {
   makeOrderLinkScene,
   makeOrderAmountScene,
   submitOrderScene,
+  userOrdersScene,
   startQiwi,
 };

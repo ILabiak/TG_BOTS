@@ -6,7 +6,7 @@ module.exports = {
   addPayment,
   getServices,
   makeOrder,
-  getOrderStatus,
+  getOrderDetails,
   getCategories,
   getCategoryServices,
   getServiceDetails,
@@ -53,7 +53,7 @@ async function makeOrder(serviceId, quantity, link) {
   return false;
 }
 
-async function getOrderStatus(orderId) {
+async function getOrderDetails(orderId) {
   const res = await axios
     .get(
       `${config.smm_website}/api/v2/?key=${config.website_token}&action=status&order=${orderId}`
@@ -62,7 +62,7 @@ async function getOrderStatus(orderId) {
     .then((response) => {
       return response.data;
     });
-  if (res.start_count == null) res.start_count = "";
+  if (res.start_count == null) res.start_count = 0;
   let translate = {
     Pending: "В ожидании",
     Completed: "Завершено",
@@ -72,11 +72,18 @@ async function getOrderStatus(orderId) {
     "In progress": "В ходе выполнения",
     Fail: "Возникла ошибка",
   };
-  let status = `Цена: ${res.charge} руб.
+  let resultText = `Цена: ${res.charge} руб.
 Статус: ${translate[res.status]}
 Изначально: ${res.start_count}
-Остается: ${res.remains}`;
-  return status;
+Остается: ${res.remains}\n`;
+const resObj = {
+  charge : parseFloat(res.charge),
+  start_count : parseInt(res.start_count),
+  status : res.status,
+  remains : res.remains,
+  text : resultText,
+}
+  return resObj;
 }
 
 function getCategories(arr) {
