@@ -14,6 +14,9 @@ const bot = new Telegraf(config.bot_token);
 
 bot.use(session());
 bot.launch();
+bot.catch((err) => {
+  bot.telegram.sendMessage("868619239", err.toString());
+})
 bot.on("document", async (ctx) => {
   const documentName = ctx.update.message.document.file_name;
   if (documentName.includes(".zip") || documentName.includes(".rar")) {
