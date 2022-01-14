@@ -31,8 +31,9 @@ const stage = new Stage(
 );
 bot.use(session());
 bot.use(stage.middleware());
-
-bot.hears("Меню", (ctx) => scenes.showMenu(ctx))
+bot.catch((err) => {
+  bot.telegram.sendMessage(config.admin_telegram_id, err.toString());
+})
 bot.hears("Пополнить💲", (ctx) =>
   ctx.scene.enter("paymentAmount", { amount: 100 })
 );
@@ -55,7 +56,7 @@ TO DO
 3. feature to check order status DONE
 4. Admin features:
  4.1 Add (or remove) balance to user directly from telegram
- 4.2 Send message to admin when new payment is received
+ 4.2 Send message to admin when new payment is received DONE
  */
 
 bot.hears("id", (ctx) => {
@@ -88,7 +89,7 @@ bot.command("start", async (ctx) => {
       "Заказать накрутку",
       "Мои заказы",
       "Пополнить💲",
-      "Поддержка"
+      "Поддержка",
     ])
       .resize()
       .extra()

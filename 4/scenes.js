@@ -7,7 +7,6 @@ const QiwiApi = require("./qiwi");
 const api = require("./api");
 const db = require("./db");
 const config = require("./config/config.json");
-const { doDuring } = require("async");
 
 let qiwi;
 
@@ -116,6 +115,8 @@ qiwiPaymentScene.hears("Проверить оплату", async (ctx) => {
     const tgId = ctx.update.message.from.id;
     await db.addBalance(tgId, paymentAmount);
     ctx.reply("Ваш баланс успешно пополнен");
+    bot.telegram.sendMessage(config.admin_telegram_id, 
+`Получено пополнение на сумму ${paymentAmount} руб.`);
     const balance = await db.getUserBalance(tgId);
     await ctx.reply(`Ваш баланс: ${balance}`);
     ctx.scene.leave("qiwiPayment");
