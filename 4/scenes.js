@@ -27,7 +27,7 @@ const showMenu = (context) => {
       "Заказать накрутку",
       "Мои заказы",
       "Пополнить💲",
-      "Услуги",
+      "Поддержка",
     ])
       .resize()
       .extra()
@@ -402,7 +402,8 @@ userOrdersScene.enter(async (ctx) => {
     ctx.session.__scenes.state.counter = counter;
   }
   if (!ctx.session.__scenes.state.arr) {
-    const orders = await db.getUserOrders(telegramId);
+    let orders = await db.getUserOrders(telegramId);
+    orders.reverse();
     for (let el of orders) {
       orderIds.push(el.orderId.toString());
       keyboardIds.push({
@@ -519,4 +520,5 @@ module.exports = {
   submitOrderScene,
   userOrdersScene,
   startQiwi,
+  showMenu,
 };

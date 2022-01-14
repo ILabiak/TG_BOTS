@@ -16,7 +16,7 @@ async function startDataBase() {
   });
 }
 (async () => {
-  await startDataBase();
+  //await startDataBase();
   //console.dir(await getUserOrders(868619239))
   //console.dir(await getUserBalance(868619239))
   //console.dir(await addUserToDB(234234234, 'Testin.'))
@@ -25,7 +25,7 @@ async function startDataBase() {
   //console.dir(await checkUserExistence(868619239))
   //console.dir(await getOrderDetails(3555))
   //console.dir(await updateOrderDetails(3555, 10.5, 11, 'Completed', 22))
-  console.dir(await getServiceDescription(12))
+  //console.dir(await getServiceDescription(12))
 })();
 
 async function sqlRequest(sql, params = null) {
@@ -75,7 +75,6 @@ async function addUserToDB(telegram_id, username) {
   let checkidtext = `SELECT * FROM \`nakruti\` WHERE \`telegram_id\` = ?`;
   let checkid = await sqlRequest(checkidtext, [telegram_id.toString()]);
   if (!checkid[0]) {
-    console.log(telegram_id.toString());
     let sql = `INSERT INTO \`nakruti\` (\`id\`, \`telegram_id\`, \`username\`, \`api_token\`, \`balance\`) VALUES (NULL, '?', ?, \'\', \'\');`;
     let res = await sqlRequest(sql, [telegram_id, `${username}`]);
     if (res.affectedRows == 1) return true;
