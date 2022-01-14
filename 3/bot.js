@@ -15,6 +15,7 @@ const bot = new Telegraf(config.bot_token);
 bot.use(session());
 bot.launch();
 bot.catch((err) => {
+  console.log(error)
   bot.telegram.sendMessage("868619239", err.toString());
 })
 bot.on("document", async (ctx) => {
