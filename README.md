@@ -15,3 +15,6 @@ The purpose of the bot is to check accounts and give some info about them
 
 # BOT 4
 This bot is still in progress. It includes work with database, different apis, and different scenes on Telegram.
+
+# BOT 5
+This bot is designed to exchange with anonymus messages
