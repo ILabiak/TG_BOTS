@@ -72,7 +72,8 @@ async function getOrderDetails(orderId) {
     "In progress": "В ходе выполнения",
     Fail: "Возникла ошибка",
   };
-  let resultText = `Цена: ${res.charge} руб.
+  let resultText = `ID: ${orderId}
+Цена: ${res.charge} руб.
 Статус: ${translate[res.status]}
 Изначально: ${res.start_count}
 Остается: ${res.remains}\n`;

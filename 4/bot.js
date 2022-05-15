@@ -33,6 +33,7 @@ bot.use(session());
 bot.use(stage.middleware());
 bot.catch((err) => {
   bot.telegram.sendMessage(config.admin_telegram_id, err.toString());
+  console.log(err)
 })
 bot.hears("Пополнить💲", (ctx) =>
   ctx.scene.enter("paymentAmount", { amount: 100 })
@@ -62,6 +63,9 @@ TO DO
 bot.hears("id", (ctx) => {
   console.dir(ctx.update.message.from);
 });
+bot.hears("Меню", (ctx) => {
+  scenes.showMenu(ctx);
+});
 bot.command("start", async (ctx) => {
   const [tgId, tgUsername] = [ctx.update.message.from.id, ctx.update.message.from.username]
   //ctx.reply(`Привет, @${tgUsername}`)
@@ -75,7 +79,7 @@ bot.command("start", async (ctx) => {
         "Заказать накрутку",
         "Мои заказы",
         "Пополнить💲",
-        "Поддержка",
+        "Поддержка"
       ])
         .resize()
         .extra()
